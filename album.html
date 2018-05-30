@@ -1,20 +1,99 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
+ <!-- Bootstrap Core CSS -->
+ <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+ <style>
+  .grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    background-color: rgb(33, 243, 180);
+    padding: 10px;
+    grid-gap: 20px;
+  }
+  .grid-item {
+    background-color: rgba(136, 204, 28, 0.8);
+    border: 1px solid rgba(197, 41, 41, 0.8);
+    padding: 20px;
+    font-size: 30px;
+    text-align: center;
     
+  }
+  
+  .grid-item img {
+    display: block;
+    max-width: 100%;
+    max-height: auto;
+  }
+  </style>
   </head>
-  <body>
-    <h1>My Photo Albums App</h1>
-    <div id="app"></div>
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
-    <script src="/js/async.min.js"></script>    
-    <script type="text/javascript" src="/js/app-config.js"></script>
-    <script src="/js/app.js"></script>
-        <script>
-       function getHtml(template) {
-          return template.join('\n');
-       }
-       listAlbums();
-    </script>
-  </body>
+<body>
+
+
+<div id="gridvue">
+  <div id="albumlist" v-if="displayingAlbums">
+      <button type="button" class="btn btn-primary" v-on:click="listAlbums()">List Albums</button>
+    <div class="grid-container">
+      <div class="grid-item" v-for="item in albumNames">
+        The folder name is {{ item }}
+        <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item)">Show Images</button>
+        <button type="button" class="btn btn-primary" v-on:click="deleteAlbum(item)">Delete Album</button>
+
+      </div>
+    </div>
+    <button type="button" class="btn btn-sm btn-warning" onclick="$('#modal').modal('show')">Create New Album</button>
+    <div id="modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-body">
+              <form>
+                <div class="form-group">
+                  <label for="albumName">Album Name</label>
+                  <input type="string" class="form-control" id="albumname" placeholder="e.g. 2018-06-Iceland">
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="create()">Submit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <div id="photolist" v-if="displayingPhotos">
+    <div class="grid-container">
+        <div class="grid-item" v-for="item in photoUrls">
+            <a :href="item.url" target="_new"> <img :src="item.url"></a>
+            <button type="button" class="btn btn-primary" v-on:click="deletePhoto(item.key)">Delete Photo</button>
+        </div>
+    </div>
+    <button type="button" class="btn btn-primary" v-on:click="listAlbums()">Back to Albums</button>
+    <label class="btn btn-primary">
+      Add Images <input type="file" multiple @change="onFileChange">
+    </label>
+  </div>
+
+</div>
+
+<!-- development version, includes helpful console warnings -->
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
+<script src="/js/async.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="js/gridvue.js"></script>
+<script>
+  var create = function (){
+    $('#modal').modal('hide');
+    gridvue.createAlbum($('#albumname').val());
+  };
+</script>
+
+</body>
 </html>
