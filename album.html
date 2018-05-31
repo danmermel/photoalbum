@@ -1,32 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
- <!-- Bootstrap Core CSS -->
- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
- <style>
-  .grid-container {
-    display: grid;
-    grid-template-columns: auto auto auto auto;
-    background-color: rgb(33, 243, 180);
-    padding: 10px;
-    grid-gap: 20px;
-  }
-  .grid-item {
-    background-color: rgba(136, 204, 28, 0.8);
-    border: 1px solid rgba(197, 41, 41, 0.8);
-    padding: 20px;
-    font-size: 30px;
-    text-align: center;
-    
-  }
-  
-  .grid-item img {
-    display: block;
-    max-width: 100%;
-    max-height: auto;
-  }
-  </style>
-  </head>
+</head>
 <body>
 
 
@@ -36,9 +11,12 @@
     <div class="grid-container">
       <div class="grid-item" v-for="item in albumNames">
         The folder name is {{ item }}
-        <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item)">Show Images</button>
-        <button type="button" class="btn btn-primary" v-on:click="deleteAlbum(item)">Delete Album</button>
-
+        <div>
+          <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item)">Show Images</button>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary" v-on:click="deleteAlbum(item)">Delete Album</button>
+        </div>
       </div>
     </div>
     <button type="button" class="btn btn-sm btn-warning" onclick="$('#modal').modal('show')">Create New Album</button>
@@ -65,8 +43,8 @@
   <div id="photolist" v-if="displayingPhotos">
     <div class="grid-container">
         <div class="grid-item" v-for="item in photoUrls">
-            <a :href="item.url" target="_new"> <img :src="item.url"></a>
-            <button type="button" class="btn btn-primary" v-on:click="deletePhoto(item.key)">Delete Photo</button>
+            <a :href="item.url" target="_blank"> <img :src="item.url"></a>
+            <button type="button" class="btn btn-primary" v-on:click="if(confirm('Are you sure?')) deletePhoto(item.key)">Delete Photo</button>
         </div>
     </div>
     <button type="button" class="btn btn-primary" v-on:click="listAlbums()">Back to Albums</button>
@@ -77,15 +55,19 @@
 
 </div>
 
-<!-- development version, includes helpful console warnings -->
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
-<script src="/js/async.min.js"></script> 
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="css/style.css">
+
+<!-- AWS SDK -->
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
+<!-- async library -->
+<script src="js/async.min.js"></script> 
+<!-- Vue JS development version, includes helpful console warnings -->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <!-- jQuery library -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<!-- Latest compiled JavaScript -->
+<!-- BS Latest compiled JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="js/gridvue.js"></script>
 <script>

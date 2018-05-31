@@ -21,7 +21,8 @@ var gridvue = new Vue({
       photoUrls: [],
       currentAlbum: "",
       displayingAlbums: true,
-      displayingPhotos: false
+      displayingPhotos: false,
+      siteUrl: "http://leilaphotos.s3-website-eu-west-1.amazonaws.com/"
     },
     methods: {
       clear: function() {
@@ -61,7 +62,7 @@ var gridvue = new Vue({
       
           var photos = data.Contents.map(function(photo) {
             var photoKey = photo.Key;
-            var photoUrl = bucketUrl + encodeURIComponent(photoKey);
+            var photoUrl = gridvue.siteUrl + encodeURIComponent(photoKey);
             gridvue.photoUrls.push({"url":photoUrl, "key":photoKey});
             console.log(photoUrl, photoKey);
 
@@ -131,6 +132,7 @@ var gridvue = new Vue({
             s3.upload({
                Key: photoKey,
                Body: file,
+               ContentType: 'image/jpeg',
                ACL: 'public-read'
             }, function(err, data) {
                if (err) {
@@ -142,11 +144,13 @@ var gridvue = new Vue({
           },
           function(err) {
             console.log("Entered here and checking for errors");
+            console.log("error!!", err)
             // if any of the file processing produced an error, err would equal that error
             if( err ) {
               // One of the iterations produced an error.
               // All processing will now stop.
-              alert('A file failed to process');
+              alert('A file failed to process', err);
+              console.log("error!!", err)
               gridvue.viewAlbum(gridvue.currentAlbum);
             } else {
               alert('All files have been processed successfully');
