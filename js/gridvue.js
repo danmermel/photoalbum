@@ -62,7 +62,7 @@ var gridvue = new Vue({
       
           var photos = data.Contents.map(function(photo) {
             var photoKey = photo.Key;
-            var photoUrl = gridvue.siteUrl + encodeURIComponent(photoKey);
+            var photoUrl =  bucketUrl + encodeURIComponent(photoKey);
             gridvue.photoUrls.push({"url":photoUrl, "key":photoKey});
             console.log(photoUrl, photoKey);
 

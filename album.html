@@ -7,7 +7,8 @@
 
 <div id="gridvue">
   <div id="albumlist" v-if="displayingAlbums">
-      <button type="button" class="btn btn-primary" v-on:click="listAlbums()">List Albums</button>
+    <button type="button" class="btn btn-primary" v-on:click="listAlbums()">List Albums</button>
+    <button type="button" class="btn btn-sm btn-warning" onclick="$('#modal').modal('show')">Create New Album</button>
     <div class="grid-container">
       <div class="grid-item" v-for="item in albumNames">
         The folder name is {{ item }}
@@ -19,7 +20,6 @@
         </div>
       </div>
     </div>
-    <button type="button" class="btn btn-sm btn-warning" onclick="$('#modal').modal('show')">Create New Album</button>
     <div id="modal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -44,7 +44,7 @@
     <div class="grid-container">
         <div class="grid-item" v-for="item in photoUrls">
             <a :href="item.url" target="_blank"> <img :src="item.url"></a>
-            <button type="button" class="btn btn-primary" v-on:click="if(confirm('Are you sure?')) deletePhoto(item.key)">Delete Photo</button>
+            <button type="button" class="btn btn-primary" v-on:click="deletePhoto(item.key)">Delete Photo</button>
         </div>
     </div>
     <button type="button" class="btn btn-primary" v-on:click="listAlbums()">Back to Albums</button>
