@@ -14,6 +14,31 @@ var s3 = new AWS.S3({
   params: {Bucket: albumBucketName}
 });
 
+Vue.component('confirm-button', {
+  props: ['label', 'pkey'],
+  methods: {
+    onclick: function () {
+      if (confirm("are you sure?")) {
+        console.log("deleting ", this.pkey)
+        gridvue.deletePhoto(this.pkey);
+      }
+    }
+  },
+  template: `
+  <button type="button" class="btn btn-primary" @click="onclick()">{{ label }} {{ pkey }}</button>
+  `
+})
+
+Vue.component('photo-item', {
+  props: ['url', 'pkey'],
+  template: `
+    <div class="grid-item">
+      <a :href="url" target="_blank"> <img :src="url"></a>
+      <confirm-button label="Delete" :pkey="pkey"></confirm-button>
+    </div>
+  `
+})
+
 var gridvue = new Vue({
     el: '#gridvue',
     data: {
