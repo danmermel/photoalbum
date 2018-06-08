@@ -16,7 +16,7 @@
           <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item)">Show Images</button>
         </div>
         <div>
-          <button type="button" class="btn btn-primary" v-on:click="deleteAlbum(item)">Delete Album</button>
+          <confirm-button label="Delete Album" :pkey="item" action="album"></confirm-button>
         </div>
       </div>
     </div>
@@ -42,7 +42,7 @@
 
   <div id="photolist" v-if="displayingPhotos">
     <div class="grid-container">
-        <photo-item v-for="item in photoUrls"  :key="item.key" v-bind:url="item.url" v-bind:pkey="item.key"></photo-item>
+        <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key"></photo-item>
     </div>
     <button type="button" class="btn btn-primary" v-on:click="listAlbums()">Back to Albums</button>
     <label class="btn btn-primary">

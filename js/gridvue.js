@@ -15,12 +15,20 @@ var s3 = new AWS.S3({
 });
 
 Vue.component('confirm-button', {
-  props: ['label', 'pkey'],
+  props: ['label', 'pkey', 'action'],
   methods: {
     onclick: function () {
+      console.log(this.pkey, this.action);
       if (confirm("are you sure?")) {
-        console.log("deleting ", this.pkey)
-        gridvue.deletePhoto(this.pkey);
+        
+        if (this.action == 'photo'){
+          console.log("deleting photo ", this.pkey)
+          gridvue.deletePhoto(this.pkey);
+        }
+        if (this.action == 'album'){
+          console.log("deleting album ", this.pkey)
+          gridvue.deleteAlbum(this.pkey);
+        }
       }
     }
   },
@@ -30,11 +38,11 @@ Vue.component('confirm-button', {
 })
 
 Vue.component('photo-item', {
-  props: ['url', 'pkey'],
+  props: ['url', 'pkey', 'action'],
   template: `
     <div class="grid-item">
       <a :href="url" target="_blank"> <img :src="url"></a>
-      <confirm-button label="Delete" :pkey="pkey"></confirm-button>
+      <confirm-button label="Delete" :action="action" :pkey="pkey"></confirm-button>
     </div>
   `
 })
