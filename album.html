@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head> 
+  <title>Leila's Photo Store</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
-
-
 <div id="gridvue">
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/album.html">Leila's Photo Store</a>
+      </div>
+      <button class="btn btn-danger navbar-btn" v-on:click="listAlbums()">List Albums</button>
+      <button class="btn btn-danger navbar-btn" onclick="$('#modal').modal('show')">Create New Album</button>
+    </div>
+  </nav>
   <div id="albumlist" v-if="displayingAlbums">
-    <button type="button" class="btn btn-primary" v-on:click="listAlbums()">List Albums</button>
-    <button type="button" class="btn btn-sm btn-warning" onclick="$('#modal').modal('show')">Create New Album</button>
     <div class="grid-container">
       <div class="grid-item" v-for="item in albumNames">
         The folder name is {{ item }}
@@ -41,19 +52,17 @@
   </div>
 
   <div id="photolist" v-if="displayingPhotos">
-    <div class="grid-container">
-        <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key"></photo-item>
-    </div>
-    <button type="button" class="btn btn-primary" v-on:click="listAlbums()">Back to Albums</button>
     <label class="btn btn-primary">
       Add Images <input type="file" multiple @change="onFileChange">
     </label>
+    <div class="grid-container">
+        <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key"></photo-item>
+    </div>
+
   </div>
 
 </div>
 
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="css/style.css">
 
 <!-- AWS SDK -->
@@ -62,10 +71,6 @@
 <script src="js/async.min.js"></script> 
 <!-- Vue JS development version, includes helpful console warnings -->
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<!-- jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<!-- BS Latest compiled JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="js/gridvue.js"></script>
 <script>
   var create = function (){
