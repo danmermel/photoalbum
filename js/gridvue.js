@@ -55,7 +55,10 @@ var gridvue = new Vue({
       currentAlbum: "",
       displayingAlbums: true,
       displayingPhotos: false,
-      siteUrl: "http://leilaphotos.s3-website-eu-west-1.amazonaws.com/"
+      pointer: 0,
+      markers: [],
+      endReached: false
+
     },
     methods: {
       clear: function() {
@@ -79,26 +82,58 @@ var gridvue = new Vue({
           }
         })
       },
-      viewAlbum: function(albumName) {
+      viewAlbum: function(albumName, direction) {
         this.clear();
         this.displayingPhotos=true;
         this.displayingAlbums=false;
         gridvue.currentAlbum = albumName; 
+        console.log('looking at ', gridvue.currentAlbum);
+        console.log("direction is ", direction);
         var albumPhotosKey = encodeURIComponent(albumName) + '/';
-        s3.listObjects({Prefix: albumPhotosKey}, function(err, data) {
+        if (direction == 'stt'){
+          gridvue.pointer = -1;
+          gridvue.markers = [];
+        };
+        if (direction =='bck'){
+          gridvue.pointer -= 2;
+        }
+        var params = {
+          Prefix: albumPhotosKey,
+          Marker: gridvue.markers[gridvue.pointer],
+          Delimiter: '~',
+          MaxKeys: 2
+        };
+        s3.listObjects(params, function(err, data) {
           if (err) {
             return alert('There was an error viewing your album: ' + err.message);
           }
           // `this` references the AWS.Response instance that represents the response
+          console.log("data is ", data);
           var href = this.request.httpRequest.endpoint.href;
           var bucketUrl = href + albumBucketName + '/';
+          // now basically checking whether we need to add more data to the array.. only if pointer is at the end 
+          // of the array.. otherwise we already have the next page element in the array
+          // and only if ISTruncated because otherwise we have no more photos in the bucket
+          if ((direction == "fwd" || direction == "stt") && (gridvue.pointer+1 == gridvue.markers.length) && data.IsTruncated ){
+            gridvue.markers.push(data.NextMarker)
+          };
+          gridvue.pointer += 1;
+          if (data.IsTruncated) {   //checking whether you are at the end of the list
+            gridvue.endReached = false;
+          } else {
+            gridvue.endReached = true;
+          }
+
+          console.log("pointer is ", gridvue.pointer);
+          console.log("markers are ", gridvue.markers)
       
           var photos = data.Contents.map(function(photo) {
-            var photoKey = photo.Key;
-            var photoUrl =  bucketUrl + encodeURIComponent(photoKey);
-            gridvue.photoUrls.push({"url":photoUrl, "key":photoKey});
-            console.log(photoUrl, photoKey);
-
+            if (photo.Size >0) {  // try to avoid the weird folder "image"
+              var photoKey = photo.Key;
+              var photoUrl =  bucketUrl + encodeURIComponent(photoKey);
+              gridvue.photoUrls.push({"url":photoUrl, "key":photoKey});
+              console.log(photoUrl, photoKey);
+            };
           });
         })
       },
@@ -123,7 +158,7 @@ var gridvue = new Vue({
               return alert('There was an error creating your album: ' + err.message);
             }
             alert('Successfully created album.');
-            gridvue.viewAlbum(albumName);
+            gridvue.viewAlbum(albumName,"stt");
           });
         });
       },
@@ -150,7 +185,7 @@ var gridvue = new Vue({
       },
 
       //this one uploads the photos to s3
-      onFileChange(e) {  
+      onFileChange(e) {
         var files = e.target.files || e.dataTransfer.files;
         if (!files.length)
           return;
@@ -184,10 +219,10 @@ var gridvue = new Vue({
               // All processing will now stop.
               alert('A file failed to process', err);
               console.log("error!!", err)
-              gridvue.viewAlbum(gridvue.currentAlbum);
+              gridvue.viewAlbum(gridvue.currentAlbum,"stt");
             } else {
               alert('All files have been processed successfully');
-              gridvue.viewAlbum(gridvue.currentAlbum);
+              gridvue.viewAlbum(gridvue.currentAlbum, "stt");
             }
           }
         );
@@ -199,7 +234,7 @@ var gridvue = new Vue({
             return alert('There was an error deleting your photo: ', err.message);
           }
           alert('Successfully deleted photo.');
-          gridvue.viewAlbum(gridvue.currentAlbum);
+          gridvue.viewAlbum(gridvue.currentAlbum,"stt");
         });
       }
     

@@ -16,7 +16,7 @@
         <a class="navbar-brand" href="album.html">Leila's Photo Store</a>
       </div>
       <button class="btn btn-danger navbar-btn" v-on:click="listAlbums()">List Albums</button>
-      <button class="btn btn-danger navbar-btn" onclick="$('#modal').modal('show')">Create New Album</button>
+      <button v-if="displayingAlbums" class="btn btn-danger navbar-btn" onclick="$('#modal').modal('show')">Create New Album</button>
     </div>
   </nav>
   <div id="albumlist" v-if="displayingAlbums">
@@ -24,7 +24,7 @@
       <div class="grid-item" v-for="item in albumNames">
         The folder name is {{ item }}
         <div>
-          <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item)">Show Images</button>
+          <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item,'stt')">Show Images</button>
         </div>
         <div>
           <confirm-button label="Delete Album" :pkey="item" action="album"></confirm-button>
@@ -57,6 +57,10 @@
     </label>
     <div class="grid-container">
         <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key"></photo-item>
+    </div>
+    <div>
+      <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous Page</button>
+      <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next Page</button>
     </div>
 
   </div>
