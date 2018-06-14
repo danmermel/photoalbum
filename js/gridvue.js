@@ -212,7 +212,6 @@ var gridvue = new Vue({
           },
           function(err) {
             console.log("Entered here and checking for errors");
-            console.log("error!!", err)
             // if any of the file processing produced an error, err would equal that error
             if( err ) {
               // One of the iterations produced an error.
