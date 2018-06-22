@@ -1,0 +1,46 @@
+<html>
+<head>
+
+<script src="js/cognito.js"></script>
+
+<!-- AWS SDK -->
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
+</head>
+
+<body>
+<script>
+
+var authData = {
+	ClientId : 'emvliumkmno2khq73lhcuebsk', // Your client id here
+	AppWebDomain : 'leilaphotos.auth.eu-west-1.amazoncognito.com',
+	TokenScopesArray : ['email', 'openid'], // e.g.['phone', 'email', 'profile','openid', 'aws.cognito.signin.user.admin'],
+	RedirectUriSignIn : 'http://localhost:8001/album.html',
+	RedirectUriSignOut : 'http://localhost:8001/logout.html'
+  };
+  
+var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
+
+auth.userhandler = {
+	onSuccess: function(result) {
+		alert("Sign in success");
+		console.log(result);
+	},
+	onFailure: function(err) {
+		alert("Error!");
+	}
+};
+
+var cognitoUser = auth.getCurrentUser();
+
+if (cognitoUser == null) {
+	console.log("it is null");
+	auth.getSession()
+}
+
+
+
+</script>
+</body>
+
+
+</html>

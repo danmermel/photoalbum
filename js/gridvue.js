@@ -2,17 +2,47 @@ var albumBucketName = 'leilaphotos';
 var bucketRegion = 'eu-west-1';
 var IdentityPoolId = 'eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8';
 
-AWS.config.update({
-  region: bucketRegion,
-  credentials: new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: IdentityPoolId
-  })
-});
+var CognitoAuth = AmazonCognitoIdentity.CognitoAuth;
+	
+var authData = {
+  ClientId : 'emvliumkmno2khq73lhcuebsk', // Your client id here
+  AppWebDomain : 'leilaphotos.auth.eu-west-1.amazoncognito.com',
+  TokenScopesArray : ['email', 'openid'], // e.g.['phone', 'email', 'profile','openid', 'aws.cognito.signin.user.admin'],
+  RedirectUriSignIn : 'http://localhost:8001/album.html',
+  RedirectUriSignOut : 'http://localhost:8001/logout.html'
+};
+  
+var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
+
+
+AWS.config.region = bucketRegion;
+
+  auth.userhandler = {
+    onSuccess: function (result) {
+      alert("Signing in success");
+      console.log(result);
+      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: 'eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8',
+        Logins: {
+          'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_Y9jF6Qx5c': result.getIdToken().getJwtToken()
+        }
+      });
+      console.log(AWS.config.credentials);
+    },
+    onFailure: function (err) {
+      alert("Error!");
+    }
+  };
+
+var curUrl = window.location.href;
+auth.parseCognitoWebResponse(curUrl);
+
 
 var s3 = new AWS.S3({
   apiVersion: '2006-03-01',
   params: {Bucket: albumBucketName}
 });
+
 
 Vue.component('confirm-button', {
   props: ['label', 'pkey', 'action'],
@@ -69,6 +99,7 @@ var gridvue = new Vue({
         this.clear();
         this.displayingPhotos=false;
         this.displayingAlbums=true;
+
         s3.listObjects({Delimiter: '/'}, function(err, data) {
           if (err) {
             return alert('There was an error listing your albums: ' + err.message);
