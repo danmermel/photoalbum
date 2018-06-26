@@ -11,38 +11,36 @@ var authData = {
   RedirectUriSignIn : 'http://localhost:8001/album.html',
   RedirectUriSignOut : 'http://localhost:8001/album.html'
 };
-  
-var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
 
+var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
 
 AWS.config.region = bucketRegion;
 
-  auth.userhandler = {
-    onSuccess: function (result) {
-      alert("Signing in success");
-      console.log(result);
-      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: 'eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8',
-        Logins: {
-          'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_Y9jF6Qx5c': result.getIdToken().getJwtToken()
-        }
-      });
-      console.log(AWS.config.credentials);
-    },
-    onFailure: function (err) {
-      alert("Error!");
-    }
-  };
+auth.userhandler = {
+  onSuccess: function (result) {
+    console.log("Signing in really success");
+    console.log(result);
+    /* AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: IdentityPoolId,
+      Logins: {
+        'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_Y9jF6Qx5c': result.getIdToken().getJwtToken()
+      }
+    });
+    console.log(AWS.config.credentials);
+    */
+  },
+  onFailure: function (err) {
+    alert("Error!");
+  }
+};
 
-var curUrl = window.location.href;
-auth.parseCognitoWebResponse(curUrl);
+if (window.location.hash.length>1) {
+  var curUrl = window.location.href;
+  auth.parseCognitoWebResponse(curUrl);
+}
 
 
-var s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  params: {Bucket: albumBucketName}
-});
-
+var s3=null; 
 
 Vue.component('confirm-button', {
   props: ['label', 'pkey', 'action'],
@@ -87,9 +85,33 @@ var gridvue = new Vue({
       displayingPhotos: false,
       pointer: 0,
       markers: [],
-      endReached: false
+      endReached: false,
+      signedIn: false
 
     },
+    mounted: function(){
+      if (auth.isUserSignedIn(auth.getCurrentUser())){
+        console.log("User is signed in");
+        this.signedIn= true;
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+          IdentityPoolId: IdentityPoolId,
+          Logins: {
+            'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_Y9jF6Qx5c': auth.signInUserSession.getIdToken().getJwtToken()
+          }
+        });
+        AWS.config.credentials.get();
+
+        s3 = new AWS.S3({
+          apiVersion: '2006-03-01',
+          params: {Bucket: albumBucketName}
+        });
+      }
+      else {
+        console.log("user is signed out");
+        this.signedIn = false;
+      }
+    },
+
     methods: {
       clear: function() {
         gridvue.albumNames = [];

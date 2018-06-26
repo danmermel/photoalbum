@@ -5,6 +5,7 @@
 
 <!-- AWS SDK -->
 <script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
+
 </head>
 
 <body>
@@ -23,19 +24,19 @@ var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
 
 auth.userhandler = {
 	onSuccess: function(result) {
-		alert("Sign in success");
 		console.log(result);
 	},
 	onFailure: function(err) {
-		alert("Error!");
+		alert("Error signing in!");
 	}
 };
 
-var cognitoUser = auth.getCurrentUser();
-
-if (cognitoUser == null) {
-	console.log("it is null");
+if (!auth.isUserSignedIn(auth.getCurrentUser())) {
+	console.log("user not signed in");
 	auth.getSession()
+} else{
+	console.log("user is signed out");
+	window.location = authData.RedirectUriSignIn;
 }
 
 
