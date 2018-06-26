@@ -25,8 +25,8 @@
       <button class="btn btn-danger navbar-btn" v-if="signedIn" v-on:click="listAlbums()">List Albums</button>
       <button v-if="displayingAlbums && signedIn" class="btn btn-danger navbar-btn" onclick="$('#modal').modal('show')">Create New Album</button>
       <ul class="nav navbar-nav navbar-right">
-        <li v-if="signedIn"><a href="/logout.html"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
-        <li v-if="!signedIn"><a href="/login.html"><span class="glyphicon glyphicon-log-in"></span> Log In</a></li>
+        <li v-if="signedIn"><a href="logout.html"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
+        <li v-if="!signedIn"><a href="login.html"><span class="glyphicon glyphicon-log-in"></span> Log In</a></li>
       </ul>
     </div>
   </nav>
