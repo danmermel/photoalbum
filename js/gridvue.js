@@ -8,8 +8,8 @@ var authData = {
   ClientId : 'emvliumkmno2khq73lhcuebsk', // Your client id here
   AppWebDomain : 'leilaphotos.auth.eu-west-1.amazoncognito.com',
   TokenScopesArray : ['email', 'openid'], // e.g.['phone', 'email', 'profile','openid', 'aws.cognito.signin.user.admin'],
-  RedirectUriSignIn : 'http://localhost:8001/album.html',
-  RedirectUriSignOut : 'http://localhost:8001/album.html'
+	RedirectUriSignIn : RedirectUriSignIn,
+	RedirectUriSignOut : RedirectUriSignOut
 };
 
 var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
