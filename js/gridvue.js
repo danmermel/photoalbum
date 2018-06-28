@@ -7,8 +7,8 @@ var CognitoAuth = AmazonCognitoIdentity.CognitoAuth;
 var authData = {
   ClientId : 'emvliumkmno2khq73lhcuebsk', // Your client id here
   AppWebDomain : 'leilaphotos.auth.eu-west-1.amazoncognito.com',
-  TokenScopesArray : ['email', 'openid'], // e.g.['phone', 'email', 'profile','openid', 'aws.cognito.signin.user.admin'],
-	RedirectUriSignIn : RedirectUriSignIn,
+  TokenScopesArray : ['email', 'openid'], 
+  RedirectUriSignIn : RedirectUriSignIn,
 	RedirectUriSignOut : RedirectUriSignOut
 };
 
@@ -18,29 +18,21 @@ AWS.config.region = bucketRegion;
 
 auth.userhandler = {
   onSuccess: function (result) {
-    console.log("Signing in really success");
+    console.log("Signing in success");
     console.log(result);
-    /* AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: IdentityPoolId,
-      Logins: {
-        'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_Y9jF6Qx5c': result.getIdToken().getJwtToken()
-      }
-    });
-    console.log(AWS.config.credentials);
-    */
   },
   onFailure: function (err) {
     alert("Error!");
   }
 };
 
-if (window.location.hash.length>1) {
+if (window.location.hash.length>1) {  //there is something in the URL so inspect it
   var curUrl = window.location.href;
   auth.parseCognitoWebResponse(curUrl);
 }
 
 
-var s3=null; 
+var s3=null;  //create a global variable, but don't set it until you have all the credentials to access S3
 
 Vue.component('confirm-button', {
   props: ['label', 'pkey', 'action'],
@@ -86,7 +78,8 @@ var gridvue = new Vue({
       pointer: 0,
       markers: [],
       endReached: false,
-      signedIn: false
+      signedIn: false,
+      uploading: false
 
     },
     mounted: function(){
@@ -154,7 +147,7 @@ var gridvue = new Vue({
           Prefix: albumPhotosKey,
           Marker: gridvue.markers[gridvue.pointer],
           Delimiter: '~',
-          MaxKeys: 2
+          MaxKeys: 20
         };
         s3.listObjects(params, function(err, data) {
           if (err) {
@@ -243,6 +236,7 @@ var gridvue = new Vue({
         if (!files.length)
           return;
         console.log("files are", files);
+        gridvue.uploading = true;
         async.each(files, 
           function(file, callback){
             var fileName = file.name;
@@ -257,9 +251,11 @@ var gridvue = new Vue({
                ACL: 'public-read'
             }, function(err, data) {
                if (err) {
+                  gridvue.uploading = false;
                   callback(err.message);
                }
                console.log("No error.", data)
+               gridvue.uploading = false;
                callback();
             });
           },
