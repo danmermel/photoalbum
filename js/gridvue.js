@@ -237,7 +237,7 @@ var gridvue = new Vue({
           return;
         console.log("files are", files);
         gridvue.uploading = true;
-        async.each(files, 
+        async.eachLimit(files,2, 
           function(file, callback){
             var fileName = file.name;
             var albumPhotosKey = encodeURIComponent(gridvue.currentAlbum) + '/';
@@ -252,7 +252,7 @@ var gridvue = new Vue({
             }, function(err, data) {
                if (err) {
                   gridvue.uploading = false;
-                  callback(err.message);
+                  return callback(err.message);
                }
                console.log("No error.", data)
                gridvue.uploading = false;
