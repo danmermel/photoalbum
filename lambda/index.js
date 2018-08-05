@@ -12,24 +12,31 @@ const THUMB_BUCKET = process.env.THUMB_BUCKET;
 
 exports.handler = function(event, context, callback) {
   
-  const key = event.Records[0].s3.object.key;
+  console.log(JSON.stringify(event));
+  if (event.Records[0].s3.object.size>0) {
+    const key = event.Records[0].s3.object.key;
 
-  s3.getObject({Bucket: BUCKET, Key: key}).promise()
-    .then(function(data) {    
-       return sharp(data.Body)
-        .resize(200, 200)
-        .toFormat('jpg')
-        .toBuffer()
-    }).then(function(data){
-      console.log("here is the buffer of the converted image", data);
-      return s3.putObject({
-        Body: data,
-        Bucket: THUMB_BUCKET,
-        ContentType: 'image/jpg',
-        Key: key,
-      }).promise()
-    }).then(function() {
-      console.log("written to s3!");
-      callback();
-     }).catch(err => callback(err));
+    s3.getObject({Bucket: BUCKET, Key: key}).promise()
+      .then(function(data) {    
+        return sharp(data.Body)
+          .resize(200, 200)
+          .toFormat('jpg')
+          .toBuffer()
+      }).then(function(data){
+        console.log("here is the buffer of the converted image", data);
+        console.log (THUMB_BUCKET, key)
+        return s3.putObject({
+          Body: data,
+          Bucket: THUMB_BUCKET,
+          ACL: "public-read",
+          ContentType: 'image/jpg',
+          Key: key,
+        }).promise()
+      }).then(function() {
+        console.log("written to s3!");
+        callback();
+      }).catch(err => callback(err));
+  } else {
+    callback();
+  }
 }

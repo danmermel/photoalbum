@@ -41,7 +41,7 @@
   <div v-if="signedIn" id="albumlist" v-if="displayingAlbums">
     <div class="grid-container">
       <div class="grid-item" v-for="item in albumNames">
-        The folder name is {{ item }}
+        Album: {{ item }}
         <div>
           <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item,'stt')">Show Images</button>
         </div>
@@ -75,7 +75,7 @@
       Add Images <input type="file" multiple @change="onFileChange">
     </label>
     <div class="grid-container">
-        <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key"></photo-item>
+        <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
     </div>
     <div>
       <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous Page</button>

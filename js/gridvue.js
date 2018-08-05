@@ -1,4 +1,5 @@
 var albumBucketName = 'leilaphotos';
+var albumBucketNameThumb = 'leilaphotosthumb';
 var bucketRegion = 'eu-west-1';
 var IdentityPoolId = 'eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8';
 
@@ -53,15 +54,15 @@ Vue.component('confirm-button', {
     }
   },
   template: `
-  <button type="button" class="btn btn-primary" @click="onclick()">{{ label }} {{ pkey }}</button>
+  <button type="button" class="btn btn-primary" @click="onclick()">{{ label }}</button>
   `
 })
 
 Vue.component('photo-item', {
-  props: ['url', 'pkey', 'action'],
+  props: ['url', 'pkey', 'action', 'thumburl'],
   template: `
     <div class="grid-item">
-      <a :href="url" target="_blank"> <img :src="url"></a>
+      <a :href="url" target="_blank"> <img :src="thumburl"></a>
       <confirm-button label="Delete" :action="action" :pkey="pkey"></confirm-button>
     </div>
   `
@@ -95,8 +96,8 @@ var gridvue = new Vue({
         AWS.config.credentials.get();
 
         s3 = new AWS.S3({
-          apiVersion: '2006-03-01',
-          params: {Bucket: albumBucketName}
+          apiVersion: '2006-03-01'
+          // params: {Bucket: albumBucketName}
         });
       }
       else {
@@ -115,7 +116,7 @@ var gridvue = new Vue({
         this.displayingPhotos=false;
         this.displayingAlbums=true;
 
-        s3.listObjects({Delimiter: '/'}, function(err, data) {
+        s3.listObjects({Delimiter: '/', Bucket: albumBucketName}, function(err, data) {
           if (err) {
             return alert('There was an error listing your albums: ' + err.message);
           } else {
@@ -144,6 +145,7 @@ var gridvue = new Vue({
           gridvue.pointer -= 2;
         }
         var params = {
+          Bucket: albumBucketNameThumb,
           Prefix: albumPhotosKey,
           Marker: gridvue.markers[gridvue.pointer],
           Delimiter: '~',
@@ -157,6 +159,8 @@ var gridvue = new Vue({
           console.log("data is ", data);
           var href = this.request.httpRequest.endpoint.href;
           var bucketUrl = href + albumBucketName + '/';
+          var bucketUrlThumb = href + albumBucketNameThumb + '/';
+
           // now basically checking whether we need to add more data to the array.. only if pointer is at the end 
           // of the array.. otherwise we already have the next page element in the array
           // and only if ISTruncated because otherwise we have no more photos in the bucket
@@ -177,8 +181,9 @@ var gridvue = new Vue({
             if (photo.Size >0) {  // try to avoid the weird folder "image"
               var photoKey = photo.Key;
               var photoUrl =  bucketUrl + encodeURIComponent(photoKey);
-              gridvue.photoUrls.push({"url":photoUrl, "key":photoKey});
-              console.log(photoUrl, photoKey);
+              var photoUrlThumb =  bucketUrlThumb + encodeURIComponent(photoKey);
+              gridvue.photoUrls.push({"url":photoUrl, "thumburl": photoUrlThumb, "key":photoKey});
+              console.log(photoUrl, photoUrlThumb, photoKey);
             };
           });
         })
@@ -192,14 +197,17 @@ var gridvue = new Vue({
           return alert('Album names cannot contain slashes.');
         }
         var albumKey = encodeURIComponent(albumName) + '/';
-        s3.headObject({Key: albumKey}, function(err, data) {
+        var params = {Key: albumKey,
+                       Bucket: albumBucketName};
+        console.log("creating... ", params);
+        s3.headObject(params, function(err, data) {
           if (!err) {
             return alert('Album already exists.');
           }
           if (err.code !== 'NotFound') {
             return alert('There was an error creating your album: ' + err.message);
           }
-          s3.putObject({Key: albumKey}, function(err, data) {
+          s3.putObject(params, function(err, data) {
             if (err) {
               return alert('There was an error creating your album: ' + err.message);
             }
@@ -211,15 +219,18 @@ var gridvue = new Vue({
 
       deleteAlbum: function(albumName) {
         var albumKey = encodeURIComponent(albumName) + '/';
-        s3.listObjects({Prefix: albumKey}, function(err, data) {
+        s3.listObjects({Prefix: albumKey, Bucket: albumBucketName}, function(err, data) {
           if (err) {
-            return alert('There was an error deleting your album: ', err.message);
+            return alert('There was an error finding your album for delete ', err.message);
           }
+          console.log("data is ", data);
           var objects = data.Contents.map(function(object) {
             return {Key: object.Key};
           });
+          console.log("objects is ", objects);
           s3.deleteObjects({
-            Delete: {Objects: objects, Quiet: true}
+            Bucket: albumBucketName,
+            Delete: {Objects: objects,  Quiet: true}
           }, function(err, data) {
             if (err) {
               return alert('There was an error deleting your album: ', err.message);
@@ -245,6 +256,7 @@ var gridvue = new Vue({
             console.log("photokey is ", photoKey);
             console.log("about to attempt ", fileName)
             s3.upload({
+              Bucket: albumBucketName,
                Key: photoKey,
                Body: file,
                ContentType: 'image/jpeg',
