@@ -40,7 +40,7 @@ Vue.component('confirm-button', {
   methods: {
     onclick: function () {
       console.log(this.pkey, this.action);
-      if (confirm("are you sure?")) {
+      if (confirm("Are you sure?")) {
         
         if (this.action == 'photo'){
           console.log("deleting photo ", this.pkey)
@@ -149,7 +149,7 @@ var gridvue = new Vue({
           Prefix: albumPhotosKey,
           Marker: gridvue.markers[gridvue.pointer],
           Delimiter: '~',
-          MaxKeys: 20
+          MaxKeys: 25
         };
         s3.listObjects(params, function(err, data) {
           if (err) {

@@ -71,9 +71,14 @@
   </div>
 
   <div id="photolist" v-if="displayingPhotos">
-    <label class="btn btn-primary">
-      Add Images <input type="file" multiple @change="onFileChange">
-    </label>
+    <div>
+      Viewing Album: {{ currentAlbum }}
+    </div>
+    <div>
+        <label class="btn btn-danger">
+        Add Images <input type="file" multiple @change="onFileChange">
+      </label>
+    </div>
     <div class="grid-container">
         <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
     </div>
