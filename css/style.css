@@ -23,7 +23,7 @@
 
 .waiting {
   font-size: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.8);
+  color: #18BC9C;
 }
 
 .albuminfo {
