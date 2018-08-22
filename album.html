@@ -37,7 +37,7 @@
       </ul>
     </div>
   </nav>
-  <div v-if="uploading">Uploading, please wait....</div>
+  <div class="waiting" v-if="uploading">Uploading, please wait....</div>
   <div v-if="signedIn" id="albumlist" v-if="displayingAlbums">
     <div class="grid-container">
       <div class="grid-item" v-for="item in albumNames">
@@ -71,18 +71,17 @@
   </div>
 
   <div id="photolist" v-if="displayingPhotos">
-    <div>
+    <div class="albuminfo">
       Viewing Album: {{ currentAlbum }}
-    </div>
-    <div>
-        <label class="btn btn-danger">
+      <label class="btn btn-danger" style="float:right">
         Add Images <input type="file" multiple @change="onFileChange">
       </label>
     </div>
+    
     <div class="grid-container">
         <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
     </div>
-    <div>
+    <div class="navigation">
       <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous Page</button>
       <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next Page</button>
     </div>

@@ -37,7 +37,7 @@ if (!auth.isUserSignedIn(auth.getCurrentUser())) {
 	console.log("user not signed in");
 	auth.getSession()
 } else{
-	console.log("user is signed out");
+	console.log("user is signed in");
 	window.location = authData.RedirectUriSignIn;
 }
 

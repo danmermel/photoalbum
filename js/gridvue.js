@@ -219,6 +219,7 @@ var gridvue = new Vue({
 
       deleteAlbum: function(albumName) {
         var albumKey = encodeURIComponent(albumName) + '/';
+        //first do it for the actual images
         s3.listObjects({Prefix: albumKey, Bucket: albumBucketName}, function(err, data) {
           if (err) {
             return alert('There was an error finding your album for delete ', err.message);
@@ -235,10 +236,29 @@ var gridvue = new Vue({
             if (err) {
               return alert('There was an error deleting your album: ', err.message);
             }
-            alert('Successfully deleted album.');
-            gridvue.listAlbums();
-          });
-        });
+            //then do it for the thumbnails
+            s3.listObjects({Prefix: albumKey, Bucket: albumBucketNameThumb}, function(err, data) {
+              if (err) {
+                return alert('There was an error finding your album for delete ', err.message);
+              }
+              console.log("data is ", data);
+              var objects = data.Contents.map(function(object) {
+                return {Key: object.Key};
+              });
+              console.log("objects is ", objects);
+              s3.deleteObjects({
+                Bucket: albumBucketNameThumb,
+                Delete: {Objects: objects,  Quiet: true}
+              }, function(err, data) {
+                if (err) {
+                  return alert('There was an error deleting your album: ', err.message);
+                }
+                alert('Successfully deleted album.');
+                gridvue.listAlbums();
+              })
+            })
+          })
+        })      
       },
 
       //this one uploads the photos to s3
@@ -289,12 +309,17 @@ var gridvue = new Vue({
       },
 
       deletePhoto: function (photoKey) {
-        s3.deleteObject({Key: photoKey}, function(err, data) {
+        s3.deleteObject({Key: photoKey, Bucket:albumBucketName}, function(err, data) {
           if (err) {
             return alert('There was an error deleting your photo: ', err.message);
           }
-          alert('Successfully deleted photo.');
-          gridvue.viewAlbum(gridvue.currentAlbum,"stt");
+          s3.deleteObject({Key: photoKey, Bucket:albumBucketNameThumb}, function(err, data) {
+            if (err) {
+              return alert('There was an error deleting your photo thumbnail: ', err.message);
+            }
+            alert('Successfully deleted photo.');
+            gridvue.viewAlbum(gridvue.currentAlbum,"stt");
+          });
         });
       }
     
