@@ -38,7 +38,7 @@
     </div>
   </nav>
   <div class="waiting" v-if="uploading">
-    Uploading, please wait....
+    Uploading. {{ upCounter}} files remaining. Please wait...
     <img src="assets/ellipsis.gif">
   </div>
   <div v-if="signedIn" id="albumlist" v-if="displayingAlbums">
@@ -80,10 +80,15 @@
         Add Images <input type="file" multiple @change="onFileChange">
       </label>
     </div>
-    
+    <div class="navigation">
+      <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous Page</button>
+      <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next Page</button>
+    </div>
+
     <div class="grid-container">
         <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
     </div>
+    
     <div class="navigation">
       <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous Page</button>
       <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next Page</button>

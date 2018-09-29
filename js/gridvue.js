@@ -80,7 +80,8 @@ var gridvue = new Vue({
       markers: [],
       endReached: false,
       signedIn: false,
-      uploading: false
+      uploading: false,
+      upCounter: 0
 
     },
     mounted: function(){
@@ -268,7 +269,8 @@ var gridvue = new Vue({
           return;
         console.log("files are", files);
         gridvue.uploading = true;
-        async.eachLimit(files,2, 
+        gridvue.upCounter = files.length;
+        async.eachLimit(files,4, 
           function(file, callback){
             var fileName = file.name;
             var albumPhotosKey = encodeURIComponent(gridvue.currentAlbum) + '/';
@@ -287,7 +289,7 @@ var gridvue = new Vue({
                   return callback(err.message);
                }
                console.log("No error.", data)
-               gridvue.uploading = false;
+               console.log(gridvue.upCounter--)
                callback();
             });
           },
@@ -302,6 +304,7 @@ var gridvue = new Vue({
               gridvue.viewAlbum(gridvue.currentAlbum,"stt");
             } else {
               alert('All files have been processed successfully');
+              gridvue.uploading = false;
               gridvue.viewAlbum(gridvue.currentAlbum, "stt");
             }
           }
