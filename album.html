@@ -38,7 +38,7 @@
     </div>
   </nav>
   <div class="waiting" v-if="uploading">
-    Uploading. {{ upCounter}} files remaining. Please wait...
+    Uploading. {{ upCounter }} files remaining. Please wait...
     <img src="assets/ellipsis.gif">
   </div>
   <div v-if="signedIn" id="albumlist" v-if="displayingAlbums">
@@ -49,7 +49,7 @@
           <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item,'stt')">Show Images</button>
         </div>
         <div>
-          <confirm-button label="Delete Album" :pkey="item" action="album"></confirm-button>
+          <confirm-button class="btn-danger" label="Delete Album" :pkey="item" action="album"></confirm-button>
         </div>
       </div>
     </div>
