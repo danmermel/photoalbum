@@ -145,6 +145,9 @@ var gridvue = new Vue({
         if (direction =='bck'){
           gridvue.pointer -= 2;
         }
+        if (direction =='del'){
+          gridvue.pointer -=1;
+        }
         var params = {
           Bucket: albumBucketNameThumb,
           Prefix: albumPhotosKey,
@@ -321,7 +324,7 @@ var gridvue = new Vue({
               return alert('There was an error deleting your photo thumbnail: ', err.message);
             }
             alert('Successfully deleted photo.');
-            gridvue.viewAlbum(gridvue.currentAlbum,"stt");
+            gridvue.viewAlbum(gridvue.currentAlbum,"del");
           });
         });
       }
