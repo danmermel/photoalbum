@@ -115,6 +115,7 @@ var gridvue = new Vue({
       listAlbums: function () {
         this.clear();
         this.displayingPhotos=false;
+        this.displayingSingle=false;
         this.displayingAlbums=true;
 
         s3.listObjects({Delimiter: '/', Bucket: albumBucketName}, function(err, data) {
@@ -134,6 +135,8 @@ var gridvue = new Vue({
         this.clear();
         this.displayingPhotos=true;
         this.displayingAlbums=false;
+        this.displayingSingle=false;
+        gridvue.photoUrls =[];
         gridvue.currentAlbum = albumName; 
         console.log('looking at ', gridvue.currentAlbum);
         console.log("direction is ", direction);
@@ -184,10 +187,17 @@ var gridvue = new Vue({
           var photos = data.Contents.map(function(photo) {
             if (photo.Size >0) {  // try to avoid the weird folder "image"
               var photoKey = photo.Key;
-              var photoUrl =  bucketUrl + encodeURIComponent(photoKey);
-              var photoUrlThumb =  bucketUrlThumb + encodeURIComponent(photoKey);
-              gridvue.photoUrls.push({"url":photoUrl, "thumburl": photoUrlThumb, "key":photoKey});
-              console.log(photoUrl, photoUrlThumb, photoKey);
+              var photoUrl;
+              var photoUrlThumb;
+              //get signed urls for accessing the private images
+              s3.getSignedUrl('getObject', {Bucket: albumBucketName, Key: photoKey}, function (err, url) {
+                photoUrl = url;
+                s3.getSignedUrl('getObject', {Bucket: albumBucketNameThumb, Key: photoKey}, function (err, url) {
+                  photoUrlThumb = url;
+                  gridvue.photoUrls.push({"url":photoUrl, "thumburl": photoUrlThumb, "key":photoKey});
+                  console.log("eh!",photoUrl, photoUrlThumb, photoKey);
+                });
+              });
             };
           });
         })
@@ -279,13 +289,14 @@ var gridvue = new Vue({
             var albumPhotosKey = encodeURIComponent(gridvue.currentAlbum) + '/';
             var photoKey = albumPhotosKey + fileName;
             console.log("photokey is ", photoKey);
-            console.log("about to attempt ", fileName)
+            console.log("about to attempt ", fileName);
+            console.log("file type is ", file.type);
             s3.upload({
               Bucket: albumBucketName,
                Key: photoKey,
                Body: file,
-               ContentType: 'image/jpeg',
-               ACL: 'public-read'
+               ContentType: file.type,
+               ACL: 'private'
             }, function(err, data) {
                if (err) {
                   gridvue.uploading = false;
@@ -333,3 +344,4 @@ var gridvue = new Vue({
 
     }
 })
+
