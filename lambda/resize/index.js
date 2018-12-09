@@ -4,6 +4,7 @@ const AWS = require('aws-sdk');
 const s3 = new AWS.S3({
   signatureVersion: 'v4',
 });
+const lambda = new AWS.Lambda({"region":"eu-west-1"});
 
 const sharp = require('sharp');
 const fs = require('fs');
@@ -16,7 +17,7 @@ exports.handler = function(event, context, callback) {
   console.log(JSON.stringify(event));
   if (event.Records[0].s3.object.size>0) {
     const key = event.Records[0].s3.object.key;
-    if (key.match(/\.jpg$|\.png$/)) {      // it is a jpg or png so make a thumbnail
+    if (key.match(/\.jpg$|\.png$/i)) {      // it is a jpg or png so make a thumbnail
 
       s3.getObject({Bucket: BUCKET, Key: key}).promise()
         .then(function(data) {    
@@ -36,7 +37,11 @@ exports.handler = function(event, context, callback) {
           }).promise()
         }).then(function() {
           console.log("written to s3!");
-          callback();
+          //now sending it to reko for keyword recognition
+          lambda.invoke ({"FunctionName":"reko", 
+                          "Payload":JSON.stringify({"key":key})},
+                          callback
+                        );
         }).catch(err => callback(err));
     } else {  // not a jpg so insert a placeholder image
       console.log("inserting placeholder...")

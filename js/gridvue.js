@@ -296,7 +296,8 @@ var gridvue = new Vue({
                Key: photoKey,
                Body: file,
                ContentType: file.type,
-               ACL: 'private'
+               ACL: 'private',
+               StorageClass: 'STANDARD'
             }, function(err, data) {
                if (err) {
                   gridvue.uploading = false;
