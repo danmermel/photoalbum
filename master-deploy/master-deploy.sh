@@ -46,10 +46,17 @@ aws lambda update-function-configuration --function-name "reko" \
         --timeout 10
 
 echo "create lambda functions"
+aws lambda create-function --function-name "remover" \
+        --runtime nodejs8.10 \
+        --role arn:aws:iam::160991186365:role/reko \
+        --handler index.handler --zip-file fileb://dummy.zip
+
+echo "create lambda functions"
 aws lambda create-function --function-name "resizer" \
         --runtime nodejs8.10 \
         --role arn:aws:iam::160991186365:role/reko \
         --handler index.handler --zip-file fileb://dummy.zip
+
 
 aws lambda update-function-configuration --function-name "resizer" \
         --environment "Variables={BUCKET=leilaphotos,THUMB_BUCKET=leilaphotosthumb}" \
@@ -73,7 +80,15 @@ aws lambda add-permission \
     --principal s3.amazonaws.com \
     --source-arn "arn:aws:s3:::leilaphotos"
 
+echo "create S3->Lambda permission for leilaphotos"
+aws lambda add-permission \
+    --function-name remover \
+    --statement-id removers3 \
+    --action "lambda:*" \
+    --principal s3.amazonaws.com \
+    --source-arn "arn:aws:s3:::leilaphotos"
+
 
 echo "create leilaphotos reko trigger from S3"
-LAMBDACONFIG='{"LambdaFunctionConfigurations":[{"Id":"leilaphotos_resize_trigger","LambdaFunctionArn":"arn:aws:lambda:eu-west-1:160991186365:function:resizer","Events":["s3:ObjectCreated:*"]}]}'
+LAMBDACONFIG='{"LambdaFunctionConfigurations":[{"Id":"leilaphotos_resize_trigger","LambdaFunctionArn":"arn:aws:lambda:eu-west-1:160991186365:function:resizer","Events":["s3:ObjectCreated:*"]}, {"Id":"leilaphotos_remover_trigger","LambdaFunctionArn":"arn:aws:lambda:eu-west-1:160991186365:function:remover","Events":["s3:ObjectRemoved:*"]}]}'
 aws s3api put-bucket-notification-configuration --bucket "leilaphotos" --notification-configuration "$LAMBDACONFIG"
