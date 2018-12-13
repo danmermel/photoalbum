@@ -39,10 +39,12 @@ function addToDynamoDB(image_id, data) {
   
   for (i in wordList) {
     if (dedupelist.indexOf(wordList[i].name) === -1) {   //i.e.the word is not yet in the array
+      var album = image_id.match(/(^.*)\//)[1];  //gets the album name
       var obj = {
         PutRequest: {
           Item: {
             id: { S: kuuid.id()},
+            album: {S: album},
             keyword: { S: wordList[i].name},
             confidence: { N: wordList[i].confidence.toString()},
             image_id: { S: image_id}

@@ -7,6 +7,12 @@ aws dynamodb create-table --table-name "images" \
   --provisioned-throughput WriteCapacityUnits=1,ReadCapacityUnits=1 \
   --global-secondary-indexes IndexName=keyword-index,KeySchema=["{AttributeName=keyword,KeyType=HASH}"],Projection="{ProjectionType=ALL}",ProvisionedThroughput="{ReadCapacityUnits=1,WriteCapacityUnits=1}"
 
+echo "create another index on the image id"
+
+aws dynamodb update-table --table-name images \
+   --global-secondary-index-updates '[{"Create": {"IndexName":"image_id-index","ProvisionedThroughput": {"ReadCapacityUnits": 1, "WriteCapacityUnits": 1}, "Projection": {"ProjectionType": "ALL"}, "KeySchema": [ {"KeyType": "HASH", "AttributeName": "image_id" }] } }]' \
+   --attribute-definitions AttributeName=image_id,AttributeType=S
+
 echo "create s3 bucket for leilaphotos .."
 aws s3 mb "s3://leilaphotos" --region eu-west-1
 
@@ -15,6 +21,7 @@ aws s3api put-bucket-cors --bucket leilaphotos --cors-configuration file://cors.
 
 
 echo "create role for lambda to access stuff.."
+# this one also allows lambda to invoke other lambda functions
 aws iam create-role --role-name reko --assume-role-policy-document file://policy.json
 
 echo "now add policies to the role to give access to services..."
@@ -34,6 +41,9 @@ aws lambda create-function --function-name "reko" \
         --runtime nodejs8.10 \
         --role arn:aws:iam::160991186365:role/reko \
         --handler index.handler --zip-file fileb://dummy.zip
+
+aws lambda update-function-configuration --function-name "reko" \
+        --timeout 10
 
 echo "create lambda functions"
 aws lambda create-function --function-name "resizer" \

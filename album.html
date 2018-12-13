@@ -44,7 +44,7 @@
   <div v-if="signedIn" id="albumlist" v-if="displayingAlbums">
     <div class="grid-container">
       <div class="grid-item" v-for="item in albumNames">
-        Album: {{ item }}
+        {{ item }}
         <div>
           <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item,'stt')">Show Images</button>
         </div>
