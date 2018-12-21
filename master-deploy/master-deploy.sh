@@ -4,13 +4,13 @@ echo "create main dynamodb table with one secondary index..."
 aws dynamodb create-table --table-name "images" \
   --attribute-definitions AttributeName=id,AttributeType=S AttributeName=keyword,AttributeType=S \
   --key-schema AttributeName=id,KeyType=HASH \
-  --provisioned-throughput WriteCapacityUnits=1,ReadCapacityUnits=1 \
-  --global-secondary-indexes IndexName=keyword-index,KeySchema=["{AttributeName=keyword,KeyType=HASH}"],Projection="{ProjectionType=ALL}",ProvisionedThroughput="{ReadCapacityUnits=1,WriteCapacityUnits=1}"
+  --billing-mode PAY_PER_REQUEST \
+  --global-secondary-indexes IndexName=keyword-index,KeySchema=["{AttributeName=keyword,KeyType=HASH}"],Projection="{ProjectionType=ALL}"
 
 echo "create another index on the image id"
 
 aws dynamodb update-table --table-name images \
-   --global-secondary-index-updates '[{"Create": {"IndexName":"image_id-index","ProvisionedThroughput": {"ReadCapacityUnits": 1, "WriteCapacityUnits": 1}, "Projection": {"ProjectionType": "ALL"}, "KeySchema": [ {"KeyType": "HASH", "AttributeName": "image_id" }] } }]' \
+   --global-secondary-index-updates '[{"Create": {"IndexName":"image_id-index", "Projection": {"ProjectionType": "ALL"}, "KeySchema": [ {"KeyType": "HASH", "AttributeName": "image_id" }] } }]' \
    --attribute-definitions AttributeName=image_id,AttributeType=S
 
 echo "create s3 bucket for leilaphotos .."

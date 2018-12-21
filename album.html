@@ -1,59 +1,62 @@
 <!DOCTYPE html>
 <html>
-<head> 
+
+<head>
   <title>Leila's Photo Store</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
-<!-- jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-<!-- Latest compiled JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
 
   <script src="js/cognito.js"></script>
   <!-- AWS SDK -->
   <script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
   <!-- async library -->
-  <script src="js/async.min.js"></script> 
+  <script src="js/async.min.js"></script>
 
   <!-- Vue JS development version, includes helpful console warnings -->
 </head>
+
 <body>
   <div id="gridvue">
-  <nav class="navbar navbar-inverse">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="album.html">Leila's Photo Store</a>
-      </div>
-      <button class="btn btn-danger navbar-btn" v-if="signedIn" v-on:click="listAlbums()">List Albums</button>
-      <button v-if="displayingAlbums && signedIn" class="btn btn-danger navbar-btn" onclick="$('#modal').modal('show')">Create New Album</button>
-      <ul class="nav navbar-nav navbar-right">
-        <li v-if="signedIn"><a href="logout.html"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
-        <li v-if="!signedIn"><a href="login.html"><span class="glyphicon glyphicon-log-in"></span> Log In</a></li>
-      </ul>
-    </div>
-  </nav>
-  <div class="waiting" v-if="uploading">
-    Uploading. {{ upCounter }} files remaining. Please wait...
-    <img src="assets/ellipsis.gif">
-  </div>
-  <div v-if="signedIn" id="albumlist" v-if="displayingAlbums">
-    <div class="grid-container">
-      <div class="grid-item" v-for="item in albumNames">
-        {{ item }}
-        <div>
-          <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item,'stt')">Show Images</button>
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="album.html">Leila's Photo Store</a>
         </div>
-        <div>
-          <confirm-button class="btn-danger" label="Delete Album" :pkey="item" action="album"></confirm-button>
+        <button class="btn btn-danger navbar-btn" v-if="signedIn" v-on:click="listAlbums()">List Albums</button>
+        <button v-if="displayingAlbums && signedIn" class="btn btn-danger navbar-btn" onclick="$('#modal').modal('show')">Create
+          New Album</button>
+        <ul class="nav navbar-nav navbar-right">
+          <li v-if="signedIn"><a href="logout.html"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
+          <li v-if="!signedIn"><a href="login.html"><span class="glyphicon glyphicon-log-in"></span> Log In</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="waiting" v-if="uploading">
+      Uploading. {{ upCounter }} files remaining. Please wait...
+      <img src="assets/ellipsis.gif">
+    </div>
+    <div v-if="signedIn" id="albumlist" v-if="displayingAlbums">
+      <div class="grid-container">
+        <div class="grid-item" v-for="item in albumNames">
+          {{ item }}
+          <div>
+            <button type="button" class="btn btn-primary" v-on:click="viewAlbum(item,'stt')">Show Images</button>
+          </div>
+          <div>
+            <confirm-button class="btn-danger" label="Delete Album" :pkey="item" action="album"></confirm-button>
+          </div>
         </div>
       </div>
-    </div>
-    <div id="modal" class="modal" tabindex="-1" role="dialog">
+      <div id="modal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-body">
@@ -71,41 +74,67 @@
           </div>
         </div>
       </div>
+    </div>
+    <div id="photolist" v-if="displayingPhotos">
+
+      <div class="albuminfo" v-if="!searching">
+        Viewing Album: {{ currentAlbum }}
+        <label class="btn btn-danger" style="float:right">
+          Add Images <input type="file" multiple @change="onFileChange">
+        </label>
+      </div>
+      <div class="navigation" v-if="!searching">
+        <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous
+          Page</button>
+        <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next
+          Page</button>
+      </div>
+
+      <div class="grid-container">
+        <photo-item v-for="item in photoUrls" :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
+      </div>
+
+      <div class="navigation" v-if="!searching">
+        <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous
+          Page</button>
+        <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next
+          Page</button>
+      </div>
+
+    </div>
+
+
+    <div id="pic_modal" class="modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Photo Details</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <img class="img-responsive" :src="modalUrl">
+            <p><button class="btn btn-default" v-for="tag in tags" @click="search(tag)">{{ tag }}</button> </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div id="photolist" v-if="displayingPhotos">
-    <div class="albuminfo">
-      Viewing Album: {{ currentAlbum }}
-      <label class="btn btn-danger" style="float:right">
-        Add Images <input type="file" multiple @change="onFileChange">
-      </label>
-    </div>
-    <div class="navigation">
-      <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous Page</button>
-      <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next Page</button>
-    </div>
 
-    <div class="grid-container">
-        <photo-item v-for="item in photoUrls"  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
-    </div>
-    
-    <div class="navigation">
-      <button type="button" class="btn btn-primary" v-if="pointer > 0" v-on:click="viewAlbum(currentAlbum, 'bck')">Previous Page</button>
-      <button type="button" class="btn btn-primary" v-if="!endReached" v-on:click="viewAlbum(currentAlbum, 'fwd')">Next Page</button>
-    </div>
-
-  </div>
-
-</div>
-
-<script>
-  var create = function (){
-    $('#modal').modal('hide');
-    gridvue.createAlbum($('#albumname').val());
-  };
-</script>
+  <script>
+    var create = function () {
+      $('#modal').modal('hide');
+      gridvue.createAlbum($('#albumname').val());
+    };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <script src="js/config.js"> </script>
   <script src="js/gridvue.js"></script>
 
 </body>
+
 </html>

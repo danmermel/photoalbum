@@ -76,7 +76,7 @@ exports.handler = function(event, context, callback) {
      }
     }, 
     MaxLabels: 50, 
-    MinConfidence: 70
+    MinConfidence: 50
    };
    rekognition.detectLabels(rekoParams, function(err, data) {
      if (err) {

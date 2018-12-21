@@ -3,7 +3,7 @@ var albumBucketNameThumb = 'leilaphotosthumb';
 var bucketRegion = 'eu-west-1';
 var IdentityPoolId = 'eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8';
 
-var CognitoAuth = AmazonCognitoIdentity.CognitoAuth;
+// var CognitoAuth = AmazonCognitoIdentity.CognitoAuth;
 	
 var authData = {
   ClientId : 'emvliumkmno2khq73lhcuebsk', // Your client id here
@@ -34,6 +34,7 @@ if (window.location.hash.length>1) {  //there is something in the URL so inspect
 
 
 var s3=null;  //create a global variable, but don't set it until you have all the credentials to access S3
+var dynamodb=null;
 
 Vue.component('confirm-button', {
   props: ['label', 'pkey', 'action'],
@@ -60,10 +61,38 @@ Vue.component('confirm-button', {
 
 Vue.component('photo-item', {
   props: ['url', 'pkey', 'action', 'thumburl'],
+  methods: {
+    onZoom: function() {
+      console.log(this.pkey);
+      gridvue.modalUrl=this.url;
+      gridvue.tags=[];
+      var params = {
+        ExpressionAttributeValues: {
+         ":k": {
+           S: this.pkey
+          }
+        }, 
+        KeyConditionExpression: "image_id = :k", 
+        ProjectionExpression: "keyword",
+        IndexName: "image_id-index",
+        TableName: "images"
+       };
+      dynamodb.query(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else {  //add keywords to tags
+          for (var i in data.Items) {
+            gridvue.tags.push(data.Items[i].keyword.S);
+          }
+        }    
+      })
+      $('#pic_modal').modal({"show":true})
+    }
+  },
   template: `
     <div class="grid-item">
-      <a :href="url" target="_blank"> <img :src="thumburl"></a>
-      <confirm-button label="Delete" :action="action" :pkey="pkey"></confirm-button>
+      <img :src="thumburl">
+      <confirm-button label="Delete" class="btn btn-danger" :action="action" :pkey="pkey"></confirm-button>
+      <button type="button" class="btn btn-primary" @click="onZoom()">View</button>
     </div>
   `
 })
@@ -81,7 +110,10 @@ var gridvue = new Vue({
       endReached: false,
       signedIn: false,
       uploading: false,
-      upCounter: 0
+      upCounter: 0,
+      modalUrl: "",
+      searching: false,
+      tags: []
 
     },
     mounted: function(){
@@ -100,6 +132,14 @@ var gridvue = new Vue({
           apiVersion: '2006-03-01'
           // params: {Bucket: albumBucketName}
         });
+
+        dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+
+        $('#pic_modal').on('hidden.bs.modal', function(){
+          console.log("hiding modal");
+          gridvue.modalUrl="";
+        })
+
       }
       else {
         console.log("user is signed out");
@@ -136,6 +176,7 @@ var gridvue = new Vue({
         this.displayingPhotos=true;
         this.displayingAlbums=false;
         this.displayingSingle=false;
+        gridvue.searching=false;
         gridvue.photoUrls =[];
         gridvue.currentAlbum = albumName; 
         console.log('looking at ', gridvue.currentAlbum);
@@ -339,6 +380,50 @@ var gridvue = new Vue({
             gridvue.viewAlbum(gridvue.currentAlbum,"del");
           });
         });
+      },
+
+      search: function(keyword){
+        $('#pic_modal').modal('hide')
+        gridvue.searching=true;
+        var params = {
+          ExpressionAttributeValues: {
+           ":k": {
+             S: keyword
+            }
+          }, 
+          KeyConditionExpression: "keyword = :k", 
+          ProjectionExpression: "image_id, confidence",
+          IndexName: "keyword-index",
+          TableName: "images"
+         };
+        dynamodb.query(params, function(err, data) {
+          console.log(data);
+          if (err) console.log(err, err.stack); // an error occurred
+          else {  //add images to the gridvue array
+            data.Items = data.Items.sort(function(item1, item2){
+              var v1= parseFloat(item1.confidence.N);
+              var v2= parseFloat(item2.confidence.N);
+              if (v1 < v2) return 1;
+              if (v1 > v2) return -1;
+              return 0;
+            })
+            gridvue.photoUrls=[];  //empty the photos array
+            data.Items.map(function(item){
+              var key = item.image_id.S;
+              console.log("key is ", key, " and confidence is ", item.confidence.N);
+              var photoUrl="";
+              var photoUrlThumb="";
+              s3.getSignedUrl('getObject', {Bucket: albumBucketName, Key: key}, function (err, url) {
+                photoUrl = url;
+                s3.getSignedUrl('getObject', {Bucket: albumBucketNameThumb, Key: key}, function (err, url) {
+                  photoUrlThumb = url;
+                  gridvue.photoUrls.push({"url":photoUrl, "thumburl": photoUrlThumb, "key":key});
+                });
+              });
+            })
+          }    
+        })
+
       }
     
 
