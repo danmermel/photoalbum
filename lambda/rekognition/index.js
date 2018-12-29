@@ -9,11 +9,11 @@ function addToDynamoDB(image_id, data) {
   console.log(data)
   for(var i in data.Labels) {
     wordList.push({ name: data.Labels[i].Name.toLowerCase(), confidence: data.Labels[i].Confidence})
-    if (data.Labels[i].Parents){
-        data.Labels[i].Parents.map(function(s) {
-        wordList.push({ name: s.Name.toLowerCase(), confidence: data.Labels[i].Confidence})
-      })
-    } 
+    //if (data.Labels[i].Parents){
+    //    data.Labels[i].Parents.map(function(s) {
+    //    wordList.push({ name: s.Name.toLowerCase(), confidence: data.Labels[i].Confidence})
+    //  })
+    // } 
   }
   
   //sorts the list by confidence

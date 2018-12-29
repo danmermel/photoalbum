@@ -7,6 +7,10 @@ aws dynamodb create-table --table-name "images" \
   --billing-mode PAY_PER_REQUEST \
   --global-secondary-indexes IndexName=keyword-index,KeySchema=["{AttributeName=keyword,KeyType=HASH}"],Projection="{ProjectionType=ALL}"
 
+
+echo "waiting before creating another index...."
+sleep 30
+
 echo "create another index on the image id"
 
 aws dynamodb update-table --table-name images \
