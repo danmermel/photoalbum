@@ -64,6 +64,7 @@ Vue.component('photo-item', {
   methods: {
     onZoom: function() {
       console.log(this.pkey);
+      gridvue.currentKey = this.pkey;
       gridvue.modalUrl=this.url;
       gridvue.tags=[];
       var params = {
@@ -112,6 +113,7 @@ var gridvue = new Vue({
       uploading: false,
       upCounter: 0,
       modalUrl: "",
+      currentKey: "",
       searching: false,
       tags: []
 

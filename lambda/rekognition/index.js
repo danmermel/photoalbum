@@ -1,4 +1,6 @@
 const AWS = require('aws-sdk');
+const db = require('./db.js');
+
 const rekognition = new AWS.Rekognition({"region":"eu-west-1"});
 const dynamodb = new AWS.DynamoDB({"region":"eu-west-1"});
 
@@ -6,7 +8,7 @@ function addToDynamoDB(image_id, data) {
 
   var kuuid = require('kuuid')
   var wordList = []
-  console.log(data)
+  //console.log(data)
   for(var i in data.Labels) {
     wordList.push({ name: data.Labels[i].Name.toLowerCase(), confidence: data.Labels[i].Confidence})
     //if (data.Labels[i].Parents){
@@ -65,38 +67,51 @@ exports.handler = function(event, context, callback) {
   
   console.log(JSON.stringify(event));
   const key = event.key;
+  console.log("key is ", key);
 
-  //call rekognition on the s3 bucket.. returns the data
+  //first see if the object has already been reko-gnised
 
-  var rekoParams = {
-    Image: {
-     S3Object: {
-      Bucket: "leilaphotos", 
-      Name: key
-     }
-    }, 
-    MaxLabels: 50, 
-    MinConfidence: 50
-   };
-   rekognition.detectLabels(rekoParams, function(err, data) {
-     if (err) {
-       console.log(err, err.stack); // an error occurred
-       throw new Error ("Error detecting labels")
-     }
-     //prepare data for insertion
-     var params = addToDynamoDB(key,data);
-     console.log(JSON.stringify(params));
-    //call dynamodb to save the data
-     dynamodb.batchWriteItem(params,function (err,data) {
-       if(err) {
-         callback(err);
-       } else {
-         callback (null,data)
-       }
-      });
+  db.read(key,function(err,data){
+    if (err){
+      console.log(err, err.stack); // an error occurred
+      throw new Error ("Error reading from db")
+    }
+    if (data.Count>0){
+      console.log("previously reko-gnised. Ignoring");
+      callback(null,"skipped");
+    }else {
+      console.log ("not previously reko-gnised")
+      var rekoParams = {
+        Image: {
+         S3Object: {
+          Bucket: "leilaphotos", 
+          Name: key
+         }
+        }, 
+        MaxLabels: 50, 
+        MinConfidence: 50
+       };
+       rekognition.detectLabels(rekoParams, function(err, data) {
+         if (err) {
+           console.log(err, err.stack); // an error occurred
+           throw new Error ("Error detecting labels")
+         }
+         //prepare data for insertion
+         var params = addToDynamoDB(key,data);
+         //console.log(JSON.stringify(params));
+        //call dynamodb to save the data
+         dynamodb.batchWriteItem(params,function (err,data) {
+           if(err) {
+             callback(err);
+           } else {
+             callback (null,data)
+           }
+          });
+    
+        });
+    
+    }
 
-    });
-
-  
+  })
 
 }
