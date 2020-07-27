@@ -100,6 +100,7 @@ Vue.component('photo-item', {
 
 var gridvue = new Vue({
     el: '#gridvue',
+    vuetify: new Vuetify(),
     data: {
       albumNames: [],
       photoUrls: [],
@@ -115,7 +116,8 @@ var gridvue = new Vue({
       modalUrl: "",
       currentKey: "",
       searching: false,
-      tags: []
+      tags: [],
+      drawer: false
 
     },
     mounted: function(){

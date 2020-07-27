@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+  <script src="js/cognito.js"></script>
+  <!-- AWS SDK -->
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
+  <!-- async library -->
+  <script src="js/async.min.js"></script>
+
+</head>
+<body>
+  <div id="gridvue">
+    <v-app>
+      <v-main>
+        <v-toolbar>
+          <v-app-bar-nav-icon v-if="signedIn" @click="drawer = !drawer">   </v-app-bar-nav-icon>
+          <v-toolbar-title href>Leila's Photo Store</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon v-if="signedIn" href="logout.html">
+            <v-icon>mdi-logout</v-icon>
+          </v-btn>
+          <v-btn icon v-if="!signedIn" href="login.html">
+            <v-icon>mdi-login</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-navigation-drawer v-model="drawer" app >
+          <p>test</p>
+        </v-navigation-drawer>
+        <v-container>Hello world</v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="js/config.js"> </script>
+  <script src="js/gridvue.js"></script>
+</body>
+</html>
