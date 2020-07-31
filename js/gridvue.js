@@ -139,10 +139,12 @@ var gridvue = new Vue({
 
         dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 
-        $('#pic_modal').on('hidden.bs.modal', function(){
-          console.log("hiding modal");
-          gridvue.modalUrl="";
-        })
+        // $('#pic_modal').on('hidden.bs.modal', function(){
+        //   console.log("hiding modal");
+        //   gridvue.modalUrl="";
+        // });
+
+        this.listAlbums()
 
       }
       else {
@@ -153,8 +155,8 @@ var gridvue = new Vue({
 
     methods: {
       clear: function() {
-        gridvue.albumNames = [];
-        gridvue.photoUrls = [];
+        this.albumNames = [];
+        this.photoUrls = [];
       },
       listAlbums: function () {
         this.clear();

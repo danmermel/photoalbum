@@ -17,7 +17,7 @@
   <div id="gridvue">
     <v-app>
       <v-main>
-        <v-toolbar>
+        <v-app-bar app dark class="indigo">
           <v-app-bar-nav-icon v-if="signedIn" @click="drawer = !drawer">   </v-app-bar-nav-icon>
           <v-toolbar-title href>Leila's Photo Store</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -27,11 +27,23 @@
           <v-btn icon v-if="!signedIn" href="login.html">
             <v-icon>mdi-login</v-icon>
           </v-btn>
-        </v-toolbar>
+        </v-app-bar>
         <v-navigation-drawer v-model="drawer" app >
           <p>test</p>
         </v-navigation-drawer>
-        <v-container>Hello world</v-container>
+        <v-container v-if="signedIn">
+          <v-layout row wrap>
+            <v-flex xs6 md3 v-for="item in albumNames">
+              <v-card>
+                <v-card-title>{{ item }}</v-card-title>
+                <v-card-actions>
+                  <v-btn @click="viewAlbum(item,'stt')">Show Images</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-flex>
+          </v-layout>
+          Hello world
+        </v-container>
       </v-main>
     </v-app>
   </div>
