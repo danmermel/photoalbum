@@ -90,13 +90,24 @@ Vue.component('photo-item', {
     }
   },
   template: `
-    <div class="grid-item">
-      <img :src="thumburl">
-      <confirm-button label="Delete" class="btn btn-danger" :action="action" :pkey="pkey"></confirm-button>
-      <button type="button" class="btn btn-primary" @click="onZoom()">View</button>
-    </div>
+    <v-card>
+      <v-img :src="thumburl">
+        <v-btn @click="onZoom()">
+          <v-icon>mdi-eye</v-icon>
+        </v-btn>
+        <v-btn label="Delete" class="btn btn-danger" :action="action" :pkey="pkey"">
+          <v-icon>mdi-trash-can-outline</v-icon>
+        </v-btn>
+      </v-img>
+    </v-card>
   `
 })
+
+{/* <div class="grid-item">
+<img :src="thumburl">
+<confirm-button label="Delete" class="btn btn-danger" :action="action" :pkey="pkey"></confirm-button>
+<button type="button" class="btn btn-primary" @click="onZoom()">View</button>
+</div> */}
 
 var gridvue = new Vue({
     el: '#gridvue',

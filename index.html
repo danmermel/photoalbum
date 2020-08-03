@@ -21,17 +21,17 @@
           <v-app-bar-nav-icon v-if="signedIn" @click="drawer = !drawer">   </v-app-bar-nav-icon>
           <v-toolbar-title href>Leila's Photo Store</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn icon v-if="signedIn" href="logout.html">
+          <v-btn v-if="signedIn" href="logout.html">Log Out
             <v-icon>mdi-logout</v-icon>
           </v-btn>
-          <v-btn icon v-if="!signedIn" href="login.html">
+          <v-btn v-if="!signedIn" href="login.html">Log In
             <v-icon>mdi-login</v-icon>
           </v-btn>
         </v-app-bar>
         <v-navigation-drawer v-model="drawer" app >
           <p>test</p>
         </v-navigation-drawer>
-        <v-container v-if="signedIn">
+        <v-container v-if="signedIn && displayingAlbums">
           <v-layout row wrap>
             <v-flex xs6 md3 v-for="item in albumNames">
               <v-card>
@@ -42,11 +42,20 @@
               </v-card>
             </v-flex>
           </v-layout>
-          Hello world
+        </v-container>
+        <v-container v-if="signedIn && displayingPhotos">
+          <v-layout row wrap>
+            <v-flex xs6 md3 v-for="item in photoUrls">
+              <photo-item  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
+            </v-flex>
+          </v-layout>
         </v-container>
       </v-main>
     </v-app>
   </div>
+
+
+
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
