@@ -63,8 +63,13 @@ Vue.component('photo-item', {
   props: ['url', 'pkey', 'action', 'thumburl'],
   methods: {
     onZoom: function() {
+      gridvue.displayingSingle=true;
+      gridvue.displayingPhotos=false;
+      gridvue.displayingAlbums=false;
       console.log(this.pkey);
       gridvue.currentKey = this.pkey;
+      console.log(this.url)
+      gridvue.currentUrl = this.url;
       gridvue.modalUrl=this.url;
       gridvue.tags=[];
       var params = {
@@ -86,11 +91,11 @@ Vue.component('photo-item', {
           }
         }    
       })
-      $('#pic_modal').modal({"show":true})
+      // $('#pic_modal').modal({"show":true})
     }
   },
   template: `
-    <v-card>
+    <v-card @click="onZoom()">
       <v-img :src="thumburl">
         <v-btn @click="onZoom()">
           <v-icon>mdi-eye</v-icon>
@@ -118,6 +123,7 @@ var gridvue = new Vue({
       currentAlbum: "",
       displayingAlbums: true,
       displayingPhotos: false,
+      displayingSingle:false,
       pointer: 0,
       markers: [],
       endReached: false,
@@ -125,6 +131,7 @@ var gridvue = new Vue({
       uploading: false,
       upCounter: 0,
       modalUrl: "",
+      currentUrl: "",
       currentKey: "",
       searching: false,
       tags: [],
@@ -400,8 +407,11 @@ var gridvue = new Vue({
       },
 
       search: function(keyword){
-        $('#pic_modal').modal('hide')
+        // $('#pic_modal').modal('hide')
         gridvue.searching=true;
+        gridvue.displayingPhotos=true;
+        gridvue.displayingAlbums=false;
+        gridvue.displayingSingle=false;
         var params = {
           ExpressionAttributeValues: {
            ":k": {
