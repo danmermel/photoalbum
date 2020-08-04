@@ -165,12 +165,9 @@ var gridvue = new Vue({
     },
 
     methods: {
-      clear: function() {
+      listAlbums: function () {
         this.albumNames = [];
         this.photoUrls = [];
-      },
-      listAlbums: function () {
-        this.clear();
         this.displayingPhotos=false;
         this.displayingSingle=false;
         this.displayingAlbums=true;
@@ -189,12 +186,11 @@ var gridvue = new Vue({
         })
       },
       viewAlbum: function(albumName, direction) {
-        this.clear();
         this.displayingPhotos=true;
         this.displayingAlbums=false;
         this.displayingSingle=false;
         gridvue.searching=false;
-        gridvue.photoUrls =[];
+        this.albumNames = [];
         gridvue.currentAlbum = albumName; 
         console.log('looking at ', gridvue.currentAlbum);
         console.log("direction is ", direction);
@@ -214,7 +210,7 @@ var gridvue = new Vue({
           Prefix: albumPhotosKey,
           Marker: gridvue.markers[gridvue.pointer],
           Delimiter: '~',
-          MaxKeys: 25
+          MaxKeys: 24
         };
         s3.listObjects(params, function(err, data) {
           if (err) {
