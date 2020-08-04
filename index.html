@@ -48,9 +48,20 @@
           </v-layout>
         </v-container>
         <v-container v-if="signedIn && displayingSingle">
-          <v-layout row wrap>
-            <v-flex xs12>
-              <v-card> 
+          <v-layout align-center justify-center row wrap>
+            <v-flex xs8>
+              <v-card>
+                <v-card-actions>
+                  <v-btn @click="viewAlbum(currentAlbum,'stt')">
+                    <v-icon left>mdi-arrow-left</v-icon>
+                  </v-btn>
+                  <v-btn>
+                    <v-icon >mdi-download</v-icon>
+                  </v-btn>
+                  <v-btn>
+                    <v-icon right >mdi-trash-can</v-icon>
+                  </v-btn>
+                </v-card-actions>
                 <v-img :src="currentUrl"></v-img>
                 <v-card-text>
                   <v-chip v-for="tag in tags" @click="search(tag)">{{ tag }}</v-chip>

@@ -96,14 +96,7 @@ Vue.component('photo-item', {
   },
   template: `
     <v-card @click="onZoom()">
-      <v-img :src="thumburl">
-        <v-btn @click="onZoom()">
-          <v-icon>mdi-eye</v-icon>
-        </v-btn>
-        <v-btn label="Delete" class="btn btn-danger" :action="action" :pkey="pkey"">
-          <v-icon>mdi-trash-can-outline</v-icon>
-        </v-btn>
-      </v-img>
+      <v-img :src="thumburl"></v-img>
     </v-card>
   `
 })
