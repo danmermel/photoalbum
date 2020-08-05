@@ -192,21 +192,21 @@ var gridvue = new Vue({
         gridvue.searching=false;
         this.albumNames = [];
         gridvue.currentAlbum = albumName; 
-        console.log('looking at ', gridvue.currentAlbum);
-        console.log("direction is ", direction);
+        //console.log('looking at ', gridvue.currentAlbum);
+        //console.log("direction is ", direction);
         var albumPhotosKey = encodeURIComponent(albumName) + '/';
         if (direction == 'stt'){
           gridvue.pointer = -1;
           gridvue.markers = [];
           gridvue.photoUrls = []; //empty the array to start again
         };
-        if (direction =='bck'){
-          gridvue.pointer -= 2;
-        }
+        // I don't think I need this anymore.. never going back
+        // if (direction =='bck'){
+        //   gridvue.pointer -= 2;
+        // }
         if (direction =='del'){
-          gridvue.pointer -=1;
-          gridvue.photoUrls = []; //empty the array to start again
-
+          //basically do nothing more....just trying to re-display the current set of photos
+          return
         }
         var params = {
           Bucket: albumBucketNameThumb,
@@ -384,7 +384,7 @@ var gridvue = new Vue({
       },
 
       deletePhoto: function (photoKey) {
-        del_dialog = false; // hide the confirmation dialog
+        gridvue.del_dialog = false; // hide the delete confirmation dialog
         s3.deleteObject({Key: photoKey, Bucket:albumBucketName}, function(err, data) {
           if (err) {
             return alert('There was an error deleting your photo: ', err.message);
@@ -392,6 +392,17 @@ var gridvue = new Vue({
           s3.deleteObject({Key: photoKey, Bucket:albumBucketNameThumb}, function(err, data) {
             if (err) {
               return alert('There was an error deleting your photo thumbnail: ', err.message);
+            }
+            //now remove the thumbnail from the display so it stops showing
+            //first find the object that contains it
+            const del_obj = gridvue.photoUrls.find(o=> o.key==photoKey)
+            //then find the index of that object in the array
+            const del_index = gridvue.photoUrls.indexOf(del_obj)
+            //console.log("index is ", del_index)
+            //console.log("array length is ", gridvue.photoUrls.length)
+            if (del_index >-1) {
+              gridvue.photoUrls.splice(del_index,1)
+              //console.log("Now array length is ", gridvue.photoUrls.length)
             }
             alert('Successfully deleted photo.');
             gridvue.viewAlbum(gridvue.currentAlbum,"del");
