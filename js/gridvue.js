@@ -128,8 +128,8 @@ var gridvue = new Vue({
       currentKey: "",
       searching: false,
       tags: [],
-      drawer: false
-
+      drawer: false,
+      del_dialog: false
     },
     mounted: function(){
       if (auth.isUserSignedIn(auth.getCurrentUser())){
@@ -198,12 +198,15 @@ var gridvue = new Vue({
         if (direction == 'stt'){
           gridvue.pointer = -1;
           gridvue.markers = [];
+          gridvue.photoUrls = []; //empty the array to start again
         };
         if (direction =='bck'){
           gridvue.pointer -= 2;
         }
         if (direction =='del'){
           gridvue.pointer -=1;
+          gridvue.photoUrls = []; //empty the array to start again
+
         }
         var params = {
           Bucket: albumBucketNameThumb,
@@ -381,6 +384,7 @@ var gridvue = new Vue({
       },
 
       deletePhoto: function (photoKey) {
+        del_dialog = false; // hide the confirmation dialog
         s3.deleteObject({Key: photoKey, Bucket:albumBucketName}, function(err, data) {
           if (err) {
             return alert('There was an error deleting your photo: ', err.message);

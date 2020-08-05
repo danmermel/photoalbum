@@ -67,9 +67,22 @@
                   <v-btn>
                     <v-icon >mdi-download</v-icon>
                   </v-btn>
-                  <v-btn>
-                    <v-icon right >mdi-trash-can</v-icon>
-                  </v-btn>
+                  <v-dialog v-model="del_dialog" width="200">
+                    <template v-slot:activator="{ on }">
+                      <v-btn    color="red lighten-2" dark v-on="on"> 
+                        <v-icon right >mdi-trash-can</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-text > Are you sure you want to delete this item? </v-card-text>
+                      <v-divider></v-divider>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn  @click="del_dialog = false">Cancel</v-btn>
+                        <v-btn  @click="deletePhoto(currentKey)">Yes</v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </v-card-actions>
                 <v-img :src="currentUrl"></v-img>
                 <v-card-text>
