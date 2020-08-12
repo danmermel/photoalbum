@@ -338,10 +338,11 @@ var gridvue = new Vue({
 
       //this one uploads the photos to s3
       onFileChange(e) {
-        var files = e.target.files || e.dataTransfer.files;
+        // console.log("e is", e)
+        var files = e // = e.target.files || e.dataTransfer.files;
         if (!files.length)
           return;
-        console.log("files are", files);
+        // console.log("files are", files);
         gridvue.uploading = true;
         gridvue.upCounter = files.length;
         async.eachLimit(files,4, 

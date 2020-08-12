@@ -31,6 +31,10 @@
         <v-navigation-drawer v-model="drawer" app >
           <p>test</p>
         </v-navigation-drawer>
+        <div class="waiting" v-if="uploading">
+          Uploading. {{ upCounter }} files remaining. Please wait...
+          <img src="assets/ellipsis.gif">
+        </div>
         <v-container v-if="signedIn && displayingAlbums">
           <v-layout row wrap>
             <v-flex xs6 md3>
@@ -63,9 +67,16 @@
           <v-layout row wrap>
             <v-flex xs12>
               <v-btn @click="listAlbums()">
-                <v-icon left>mdi-arrow-left</v-icon>
+                <v-icon left>mdi-arrow-left</v-icon>Back to Albums
               </v-btn>
+              <v-file-input small-chips outlined dense multiple label="Add photos to this Album" @change="onFileChange"> </v-file-input>
             </v-flex>
+            <!-- <v-flex xs6 md3>
+              <v-card>
+                <v-card-title class="justify-center">Add Photos</v-card-title>
+                <v-file-input multiple @change="onFileChange"> </v-file-input>
+              </v-card>
+            </v-flex> -->
             <v-flex xs6 md3 v-for="item in photoUrls">
               <photo-item  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
             </v-flex>
