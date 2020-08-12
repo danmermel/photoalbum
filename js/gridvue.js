@@ -129,7 +129,9 @@ var gridvue = new Vue({
       searching: false,
       tags: [],
       drawer: false,
-      del_dialog: false
+      del_dialog: false,
+      create_dialog: false,
+      newAlbum:""
     },
     mounted: function(){
       if (auth.isUserSignedIn(auth.getCurrentUser())){
@@ -260,6 +262,7 @@ var gridvue = new Vue({
         })
       },
       createAlbum: function(albumName) {
+        gridvue.create_dialog = false //hide the create album dialog
         albumName = albumName.trim();
         if (!albumName) {
           return alert('Album names must contain at least one non-space character.');
@@ -283,6 +286,7 @@ var gridvue = new Vue({
               return alert('There was an error creating your album: ' + err.message);
             }
             alert('Successfully created album.');
+            gridvue.newAlbum="" //empty string for next time
             gridvue.viewAlbum(albumName,"stt");
           });
         });
