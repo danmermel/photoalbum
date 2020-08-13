@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
@@ -35,12 +36,28 @@
           Uploading. {{ upCounter }} files remaining. Please wait...
           <img src="assets/ellipsis.gif">
         </div>
+        <v-container v-if="displayAlert">
+          <v-layout row justify-center>
+            <v-flex xs10>
+              <v-alert v-model="displayAlert" dense :type="alertType" dismissible>{{ alertMessage }}</v-alert>
+            </v-flex>
+          </v-layout>
+        </v-container>
+        <v-container v-if="getAlbumName">
+          <v-layout row justify-center>
+            <v-flex xs10>
+              <v-text-field v-model="newAlbum">Enter Name of new Album</v-text-field>
+              <v-btn  @click="getAlbumName=false">Cancel</v-btn>
+              <v-btn  @click="createAlbum(newAlbum)">Submit</v-btn>
+            </v-flex>
+          </v-layout>
+        </v-container>
         <v-container v-if="signedIn && displayingAlbums">
           <v-layout row wrap>
             <v-flex xs6 md3>
-              <v-card height="100px" @click="create_dialog=true">
+              <v-card height="100px" @click="getAlbumName=true">
                 <v-card-title class="justify-center">Add New Album</v-card-title>
-                <v-card-actions>
+                <!-- <v-card-actions>
                   <v-dialog v-model="create_dialog" width="200">
                     <v-card>
                       <v-card-text > Enter Name of new Album</v-card-text>
@@ -53,7 +70,7 @@
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
-                </v-card-actions>
+                </v-card-actions> -->
               </v-card>
             </v-flex>
             <v-flex xs6 md3 v-for="item in albumNames">
@@ -69,7 +86,15 @@
               <v-btn @click="listAlbums()">
                 <v-icon left>mdi-arrow-left</v-icon>Back to Albums
               </v-btn>
-              <v-file-input small-chips outlined dense multiple label="Add photos to this Album" @change="onFileChange"> </v-file-input>
+              <v-file-input v-model="files"
+                            small-chips outlined dense multiple 
+                            label="Add photos to this Album"  >
+                            
+              </v-file-input>
+              <v-btn @click="onFileChange(files)">
+                <v-icon left>mdi-arrow-left</v-icon>
+              </v-btn>
+              
             </v-flex>
             <!-- <v-flex xs6 md3>
               <v-card>

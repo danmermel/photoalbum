@@ -131,11 +131,16 @@ var gridvue = new Vue({
       drawer: false,
       del_dialog: false,
       create_dialog: false,
-      newAlbum:""
+      getAlbumName: false,
+      newAlbum:"",
+      files: [],
+      displayAlert: false,
+      alertType: "info",
+      alertMessage: ""
     },
     mounted: function(){
       if (auth.isUserSignedIn(auth.getCurrentUser())){
-        console.log("User is signed in");
+        //console.log("User is signed in");
         this.signedIn= true;
         AWS.config.credentials = new AWS.CognitoIdentityCredentials({
           IdentityPoolId: IdentityPoolId,
@@ -161,7 +166,7 @@ var gridvue = new Vue({
 
       }
       else {
-        console.log("user is signed out");
+        //console.log("user is signed out");
         this.signedIn = false;
       }
     },
@@ -176,13 +181,16 @@ var gridvue = new Vue({
 
         s3.listObjects({Delimiter: '/', Bucket: albumBucketName}, function(err, data) {
           if (err) {
-            return alert('There was an error listing your albums: ' + err.message);
+            gridvue.alertMessage = "There was an error listing your albums: " + err.message
+            gridvue.alertType = "error"
+            gridvue.displayAlert = true
+            return 
           } else {
             var albums = data.CommonPrefixes.map(function(commonPrefix) {
               var prefix = commonPrefix.Prefix;
               var albumName = decodeURIComponent(prefix.replace('/', ''));
               gridvue.albumNames.push(albumName);
-              console.log(albumName);
+              //console.log(albumName);
             })
           }
         })
@@ -219,10 +227,13 @@ var gridvue = new Vue({
         };
         s3.listObjects(params, function(err, data) {
           if (err) {
-            return alert('There was an error viewing your album: ' + err.message);
+            gridvue.alertMessage = "There was an error viewing your album: " + err.message
+            gridvue.alertType = "error"
+            gridvue.displayAlert = true
+            return
           }
           // `this` references the AWS.Response instance that represents the response
-          console.log("data is ", data);
+          //console.log("data is ", data);
           var href = this.request.httpRequest.endpoint.href;
           var bucketUrl = href + albumBucketName + '/';
           var bucketUrlThumb = href + albumBucketNameThumb + '/';
@@ -240,8 +251,8 @@ var gridvue = new Vue({
             gridvue.endReached = true;
           }
 
-          console.log("pointer is ", gridvue.pointer);
-          console.log("markers are ", gridvue.markers)
+          //console.log("pointer is ", gridvue.pointer);
+          //console.log("markers are ", gridvue.markers)
       
           var photos = data.Contents.map(function(photo) {
             if (photo.Size >0) {  // try to avoid the weird folder "image"
@@ -254,7 +265,7 @@ var gridvue = new Vue({
                 s3.getSignedUrl('getObject', {Bucket: albumBucketNameThumb, Key: photoKey}, function (err, url) {
                   photoUrlThumb = url;
                   gridvue.photoUrls.push({"url":photoUrl, "thumburl": photoUrlThumb, "key":photoKey});
-                  console.log("eh!",photoUrl, photoUrlThumb, photoKey);
+                  //console.log("eh!",photoUrl, photoUrlThumb, photoKey);
                 });
               });
             };
@@ -265,27 +276,45 @@ var gridvue = new Vue({
         gridvue.create_dialog = false //hide the create album dialog
         albumName = albumName.trim();
         if (!albumName) {
-          return alert('Album names must contain at least one non-space character.');
+          gridvue.alertMessage ="Album names must contain at least one non-space character"
+          gridvue.alertType = "warning"
+          gridvue.displayAlert = true
+          return 
         }
         if (albumName.indexOf('/') !== -1) {
-          return alert('Album names cannot contain slashes.');
+          gridvue.alertMessage ="Album names cannot contain slashes"
+          gridvue.alertType = "warning"
+          gridvue.displayAlert = true
+          return 
         }
         var albumKey = encodeURIComponent(albumName) + '/';
         var params = {Key: albumKey,
                        Bucket: albumBucketName};
-        console.log("creating... ", params);
+        //console.log("creating... ", params);
         s3.headObject(params, function(err, data) {
           if (!err) {
-            return alert('Album already exists.');
+            gridvue.alertMessage ="Album already exists"
+            gridvue.alertType = "warning"
+            gridvue.displayAlert = true
+            return 
           }
           if (err.code !== 'NotFound') {
-            return alert('There was an error creating your album: ' + err.message);
+            gridvue.alertMessage = "There was an error creating your album: " + err.message
+            gridvue.alertType = "error"
+            gridvue.displayAlert = true
+            return 
           }
           s3.putObject(params, function(err, data) {
             if (err) {
-              return alert('There was an error creating your album: ' + err.message);
+              gridvue.alertMessage = "There was an error creating your album: " + err.message
+              gridvue.alertType = "error"
+              gridvue.displayAlert = true
+              return 
             }
-            alert('Successfully created album.');
+            gridvue.getAlbumName=false 
+            gridvue.alertMessage ="Successfully created album"
+            gridvue.alertType = "success"
+            gridvue.displayAlert = true
             gridvue.newAlbum="" //empty string for next time
             gridvue.viewAlbum(albumName,"stt");
           });
@@ -297,38 +326,52 @@ var gridvue = new Vue({
         //first do it for the actual images
         s3.listObjects({Prefix: albumKey, Bucket: albumBucketName}, function(err, data) {
           if (err) {
-            return alert('There was an error finding your album for delete ', err.message);
+            gridvue.alertMessage = "There was an error finding your album for delete: " + err.message
+            gridvue.alertType = "error"
+            gridvue.displayAlert = true
+            return;
           }
-          console.log("data is ", data);
+          //console.log("data is ", data);
           var objects = data.Contents.map(function(object) {
             return {Key: object.Key};
           });
-          console.log("objects is ", objects);
+          //console.log("objects is ", objects);
           s3.deleteObjects({
             Bucket: albumBucketName,
             Delete: {Objects: objects,  Quiet: true}
           }, function(err, data) {
             if (err) {
-              return alert('There was an error deleting your album: ', err.message);
+              gridvue.alertMessage = "There was an error deleting your album: " + err.message
+              gridvue.alertType = "error"
+              gridvue.displayAlert = true
+              return 
             }
             //then do it for the thumbnails
             s3.listObjects({Prefix: albumKey, Bucket: albumBucketNameThumb}, function(err, data) {
               if (err) {
-                return alert('There was an error finding your album for delete ', err.message);
+                gridvue.alertMessage = "There was an error finding your album for delete: " + err.message
+                gridvue.alertType = "error"
+                gridvue.displayAlert = true
+                return
               }
-              console.log("data is ", data);
+              //console.log("data is ", data);
               var objects = data.Contents.map(function(object) {
                 return {Key: object.Key};
               });
-              console.log("objects is ", objects);
+              //console.log("objects is ", objects);
               s3.deleteObjects({
                 Bucket: albumBucketNameThumb,
                 Delete: {Objects: objects,  Quiet: true}
               }, function(err, data) {
                 if (err) {
-                  return alert('There was an error deleting your album: ', err.message);
+                  gridvue.alertMessage = "There was an error deleting your album: " + err.message
+                  gridvue.alertType = "error"
+                  gridvue.displayAlert = true
+                  return 
                 }
-                alert('Successfully deleted album.');
+                gridvue.alertMessage = "Successfully deleted album"
+                gridvue.alertType = "success"
+                gridvue.displayAlert = true
                 gridvue.listAlbums();
               })
             })
@@ -337,9 +380,7 @@ var gridvue = new Vue({
       },
 
       //this one uploads the photos to s3
-      onFileChange(e) {
-        // console.log("e is", e)
-        var files = e // = e.target.files || e.dataTransfer.files;
+      onFileChange(files) {
         if (!files.length)
           return;
         // console.log("files are", files);
@@ -350,9 +391,9 @@ var gridvue = new Vue({
             var fileName = file.name;
             var albumPhotosKey = encodeURIComponent(gridvue.currentAlbum) + '/';
             var photoKey = albumPhotosKey + fileName;
-            console.log("photokey is ", photoKey);
-            console.log("about to attempt ", fileName);
-            console.log("file type is ", file.type);
+            //console.log("photokey is ", photoKey);
+            //console.log("about to attempt ", fileName);
+            //console.log("file type is ", file.type);
             s3.upload({
               Bucket: albumBucketName,
                Key: photoKey,
@@ -365,23 +406,28 @@ var gridvue = new Vue({
                   gridvue.uploading = false;
                   return callback(err.message);
                }
-               console.log("No error.", data)
+               //console.log("No error.", data)
                console.log(gridvue.upCounter--)
                callback();
             });
           },
           function(err) {
-            console.log("Entered here and checking for errors");
+            //console.log("Entered here and checking for errors");
             // if any of the file processing produced an error, err would equal that error
             if( err ) {
               // One of the iterations produced an error.
               // All processing will now stop.
-              alert('A file failed to process', err);
+              gridvue.alertMessage = "A file failed to process: " + err
+              gridvue.alertType = "error"
+              gridvue.displayAlert = true
               console.log("error!!", err)
               gridvue.viewAlbum(gridvue.currentAlbum,"stt");
             } else {
-              alert('All files have been processed successfully');
               gridvue.uploading = false;
+              gridvue.files=[];
+              gridvue.alertMessage = "All files have been processed successfully"
+              gridvue.alertType = "success"
+              gridvue.displayAlert = true
               gridvue.viewAlbum(gridvue.currentAlbum, "stt");
             }
           }
@@ -392,11 +438,17 @@ var gridvue = new Vue({
         gridvue.del_dialog = false; // hide the delete confirmation dialog
         s3.deleteObject({Key: photoKey, Bucket:albumBucketName}, function(err, data) {
           if (err) {
-            return alert('There was an error deleting your photo: ', err.message);
+            gridvue.alertMessage = "There was an error deleting your photo: " + err.message
+            gridvue.alertType = "error"
+            gridvue.displayAlert = true
+            return
           }
           s3.deleteObject({Key: photoKey, Bucket:albumBucketNameThumb}, function(err, data) {
             if (err) {
-              return alert('There was an error deleting your photo thumbnail: ', err.message);
+              gridvue.alertMessage = "There was an error deleting your photo thumbnail: " + err.message
+              gridvue.alertType = "error"
+              gridvue.displayAlert = true
+              return
             }
             //now remove the thumbnail from the display so it stops showing
             //first find the object that contains it
@@ -409,7 +461,9 @@ var gridvue = new Vue({
               gridvue.photoUrls.splice(del_index,1)
               //console.log("Now array length is ", gridvue.photoUrls.length)
             }
-            alert('Successfully deleted photo.');
+            gridvue.alertMessage = "Successfully deleted photo"
+            gridvue.alertType = "success"
+            gridvue.displayAlert = true
             gridvue.viewAlbum(gridvue.currentAlbum,"del");
           });
         });
@@ -433,7 +487,7 @@ var gridvue = new Vue({
           TableName: "images"
          };
         dynamodb.query(params, function(err, data) {
-          console.log(data);
+          //console.log(data);
           if (err) console.log(err, err.stack); // an error occurred
           else {  //add images to the gridvue array
             data.Items = data.Items.sort(function(item1, item2){
@@ -446,7 +500,7 @@ var gridvue = new Vue({
             gridvue.photoUrls=[];  //empty the photos array
             data.Items.map(function(item){
               var key = item.image_id.S;
-              console.log("key is ", key, " and confidence is ", item.confidence.N);
+              //console.log("key is ", key, " and confidence is ", item.confidence.N);
               var photoUrl="";
               var photoUrlThumb="";
               s3.getSignedUrl('getObject', {Bucket: albumBucketName, Key: key}, function (err, url) {
