@@ -130,7 +130,6 @@ var gridvue = new Vue({
       tags: [],
       drawer: false,
       del_dialog: false,
-      create_dialog: false,
       getAlbumName: false,
       newAlbum:"",
       files: [],
@@ -273,7 +272,6 @@ var gridvue = new Vue({
         })
       },
       createAlbum: function(albumName) {
-        gridvue.create_dialog = false //hide the create album dialog
         albumName = albumName.trim();
         if (!albumName) {
           gridvue.alertMessage ="Album names must contain at least one non-space character"
