@@ -52,6 +52,18 @@
             </v-flex>
           </v-layout>
         </v-container>
+        <v-container v-if="uploadPhotos">
+          <v-layout row justify-center>
+            <v-flex xs10>
+              <v-file-input v-model="files"
+                small-chips outlined dense multiple 
+                label="Add photos to this Album"  >
+              </v-file-input>
+              <v-btn  @click="uploadPhotos=false">Cancel</v-btn>
+              <v-btn @click="onFileChange(files)">Upload </v-btn>
+            </v-flex>
+          </v-layout>
+        </v-container>
         <v-container v-if="signedIn && displayingAlbums">
           <v-layout row wrap>
             <v-flex xs6 md3>
@@ -72,15 +84,9 @@
               <v-btn @click="listAlbums()">
                 <v-icon left>mdi-arrow-left</v-icon>Back to Albums
               </v-btn>
-              <v-file-input v-model="files"
-                            small-chips outlined dense multiple 
-                            label="Add photos to this Album"  >
-                            
-              </v-file-input>
-              <v-btn @click="onFileChange(files)">
-                <v-icon left>mdi-arrow-left</v-icon>
+              <v-btn @click="uploadPhotos=true">
+                <v-icon left>mdi-arrow-left</v-icon>Upload Photos
               </v-btn>
-              
             </v-flex>
             <!-- <v-flex xs6 md3>
               <v-card>

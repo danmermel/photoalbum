@@ -135,7 +135,8 @@ var gridvue = new Vue({
       files: [],
       displayAlert: false,
       alertType: "info",
-      alertMessage: ""
+      alertMessage: "",
+      uploadPhotos: false
     },
     mounted: function(){
       if (auth.isUserSignedIn(auth.getCurrentUser())){
@@ -199,6 +200,7 @@ var gridvue = new Vue({
         this.displayingAlbums=false;
         this.displayingSingle=false;
         gridvue.searching=false;
+        gridvue.uploadPhotos = false;
         this.albumNames = [];
         gridvue.currentAlbum = albumName; 
         //console.log('looking at ', gridvue.currentAlbum);
