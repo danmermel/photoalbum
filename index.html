@@ -111,7 +111,7 @@
                   <v-btn @click="viewAlbum(currentAlbum,'del')">
                     <v-icon left>mdi-arrow-left</v-icon>
                   </v-btn>
-                  <v-btn>
+                  <v-btn @click="downloadPhoto(currentUrl)">
                     <v-icon >mdi-download</v-icon>
                   </v-btn>
                   <v-dialog v-model="del_dialog" width="200">

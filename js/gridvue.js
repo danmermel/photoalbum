@@ -261,7 +261,7 @@ var gridvue = new Vue({
               var photoUrl;
               var photoUrlThumb;
               //get signed urls for accessing the private images
-              s3.getSignedUrl('getObject', {Bucket: albumBucketName, Key: photoKey}, function (err, url) {
+              s3.getSignedUrl('getObject', {Bucket: albumBucketName, Key: photoKey, ResponseContentDisposition: `attachment; filename="${photoKey}"`}, function (err, url) {
                 photoUrl = url;
                 s3.getSignedUrl('getObject', {Bucket: albumBucketNameThumb, Key: photoKey}, function (err, url) {
                   photoUrlThumb = url;
@@ -503,8 +503,9 @@ var gridvue = new Vue({
               //console.log("key is ", key, " and confidence is ", item.confidence.N);
               var photoUrl="";
               var photoUrlThumb="";
-              s3.getSignedUrl('getObject', {Bucket: albumBucketName, Key: key}, function (err, url) {
+              s3.getSignedUrl('getObject', {Bucket: albumBucketName, Key: key,ResponseContentDisposition: `attachment; filename="${key}"`}, function (err, url) {
                 photoUrl = url;
+                //console.log("this is the url with CD", url)
                 s3.getSignedUrl('getObject', {Bucket: albumBucketNameThumb, Key: key}, function (err, url) {
                   photoUrlThumb = url;
                   gridvue.photoUrls.push({"url":photoUrl, "thumburl": photoUrlThumb, "key":key});
@@ -514,6 +515,12 @@ var gridvue = new Vue({
           }    
         })
 
+      },
+
+      downloadPhoto: function (imageURL) {
+
+        window.open(imageURL)
+        
       }
     
 
