@@ -324,6 +324,7 @@ var gridvue = new Vue({
       deleteAlbum: function(albumName) {
         var albumKey = encodeURIComponent(albumName) + '/';
         //first do it for the actual images
+        console.log("Listing objects")
         s3.listObjects({Prefix: albumKey, Bucket: albumBucketName}, function(err, data) {
           if (err) {
             gridvue.alertMessage = "There was an error finding your album for delete: " + err.message
@@ -336,6 +337,7 @@ var gridvue = new Vue({
             return {Key: object.Key};
           });
           //console.log("objects is ", objects);
+          console.log("Now trying to delete objects")
           s3.deleteObjects({
             Bucket: albumBucketName,
             Delete: {Objects: objects,  Quiet: true}
@@ -347,6 +349,7 @@ var gridvue = new Vue({
               return 
             }
             //then do it for the thumbnails
+            console.log("Listing thumbnail  objects")
             s3.listObjects({Prefix: albumKey, Bucket: albumBucketNameThumb}, function(err, data) {
               if (err) {
                 gridvue.alertMessage = "There was an error finding your album for delete: " + err.message
@@ -359,6 +362,7 @@ var gridvue = new Vue({
                 return {Key: object.Key};
               });
               //console.log("objects is ", objects);
+              //console.log("Now trying to delete thumbnail objects")
               s3.deleteObjects({
                 Bucket: albumBucketNameThumb,
                 Delete: {Objects: objects,  Quiet: true}
@@ -374,6 +378,7 @@ var gridvue = new Vue({
                 gridvue.displayAlert = true
                 gridvue.listAlbums();
               })
+
             })
           })
         })      
