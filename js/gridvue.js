@@ -322,67 +322,76 @@ var gridvue = new Vue({
         });
       },
 
-      deleteAlbum: function(albumName) {
+      deleteAlbum: async function(albumName) {
+        gridvue.del_dialog = false; // hide the delete confirmation dialog
+        var objects;  //will contain the objects to delete
         var albumKey = encodeURIComponent(albumName) + '/';
         //first do it for the actual images
-        console.log("Listing objects")
-        s3.listObjects({Prefix: albumKey, Bucket: albumBucketName}, function(err, data) {
-          if (err) {
-            gridvue.alertMessage = "There was an error finding your album for delete: " + err.message
-            gridvue.alertType = "error"
-            gridvue.displayAlert = true
-            return;
-          }
-          //console.log("data is ", data);
-          var objects = data.Contents.map(function(object) {
+        //console.log("Listing objects")
+        try {
+          var data = await s3.listObjects({Prefix: albumKey, Bucket: albumBucketName}).promise()
+          objects = data.Contents.map(function(object) {
+            return {Key: object.Key};
+            //console.log("objects is ", objects);
+
+          });
+        } catch (e) {
+          gridvue.alertMessage = "There was an error finding your album for delete: " + e.message
+          gridvue.alertType = "error"
+          gridvue.displayAlert = true
+          return;
+        }
+
+        //console.log("Now trying to delete objects")
+        try {
+          var data = await s3.deleteObjects({
+            Bucket: albumBucketName,
+            Delete: {Objects: objects,  Quiet: true}
+          }).promise()
+
+        } catch(e) {
+          gridvue.alertMessage = "There was an error deleting your album: " + e.message
+          gridvue.alertType = "error"
+          gridvue.displayAlert = true
+          return 
+        }
+
+        //then do it for the thumbnails
+        //console.log("Listing thumbnail  objects")
+        objects = {} //empty the object
+
+        try{
+          var data = await s3.listObjects({Prefix: albumKey, Bucket: albumBucketNameThumb}).promise()
+          objects = data.Contents.map(function(object) {
             return {Key: object.Key};
           });
           //console.log("objects is ", objects);
-          console.log("Now trying to delete objects")
-          s3.deleteObjects({
-            Bucket: albumBucketName,
-            Delete: {Objects: objects,  Quiet: true}
-          }, function(err, data) {
-            if (err) {
-              gridvue.alertMessage = "There was an error deleting your album: " + err.message
-              gridvue.alertType = "error"
-              gridvue.displayAlert = true
-              return 
-            }
-            //then do it for the thumbnails
-            console.log("Listing thumbnail  objects")
-            s3.listObjects({Prefix: albumKey, Bucket: albumBucketNameThumb}, function(err, data) {
-              if (err) {
-                gridvue.alertMessage = "There was an error finding your album for delete: " + err.message
-                gridvue.alertType = "error"
-                gridvue.displayAlert = true
-                return
-              }
-              //console.log("data is ", data);
-              var objects = data.Contents.map(function(object) {
-                return {Key: object.Key};
-              });
-              //console.log("objects is ", objects);
-              //console.log("Now trying to delete thumbnail objects")
-              s3.deleteObjects({
-                Bucket: albumBucketNameThumb,
-                Delete: {Objects: objects,  Quiet: true}
-              }, function(err, data) {
-                if (err) {
-                  gridvue.alertMessage = "There was an error deleting your album: " + err.message
-                  gridvue.alertType = "error"
-                  gridvue.displayAlert = true
-                  return 
-                }
-                gridvue.alertMessage = "Successfully deleted album"
-                gridvue.alertType = "success"
-                gridvue.displayAlert = true
-                gridvue.listAlbums();
-              })
+        } catch(e) {
+          gridvue.alertMessage = "There was an error finding your album for delete: " + e.message
+          gridvue.alertType = "error"
+          gridvue.displayAlert = true
+        }
 
-            })
-          })
-        })      
+        try {
+          if (objects.length>0) {
+            //console.log("Now trying to delete thumbnail objects (but only if there are any)")
+            var data = await s3.deleteObjects({
+              Bucket: albumBucketNameThumb,
+              Delete: {Objects: objects,  Quiet: true}
+            }).promise()
+          }
+        } catch (e) {
+          gridvue.alertMessage = "There was an error deleting your album: " + e.message
+          gridvue.alertType = "error"
+          gridvue.displayAlert = true
+          return 
+        }
+        // if I get here then all is well
+        gridvue.alertMessage = "Successfully deleted album"
+        gridvue.alertType = "success"
+        gridvue.displayAlert = true
+        gridvue.listAlbums();
+   
       },
 
       //this one uploads the photos to s3
