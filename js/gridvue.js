@@ -172,28 +172,29 @@ var gridvue = new Vue({
     },
 
     methods: {
-      listAlbums: function () {
+      listAlbums: async function () {
         this.albumNames = [];
         this.photoUrls = [];
         this.displayingPhotos=false;
         this.displayingSingle=false;
         this.displayingAlbums=true;
 
-        s3.listObjects({Delimiter: '/', Bucket: albumBucketName}, function(err, data) {
-          if (err) {
-            gridvue.alertMessage = "There was an error listing your albums: " + err.message
-            gridvue.alertType = "error"
-            gridvue.displayAlert = true
-            return 
-          } else {
-            var albums = data.CommonPrefixes.map(function(commonPrefix) {
-              var prefix = commonPrefix.Prefix;
-              var albumName = decodeURIComponent(prefix.replace('/', ''));
-              gridvue.albumNames.push(albumName);
-              //console.log(albumName);
-            })
-          }
-        })
+        try {
+          const data = await s3.listObjects({Delimiter: '/', Bucket: albumBucketName}).promise();
+          // console.log("data is ", data)
+          var albums = data.CommonPrefixes.map(function(commonPrefix) {
+            var prefix = commonPrefix.Prefix;
+            var albumName = decodeURIComponent(prefix.replace('/', ''));
+            gridvue.albumNames.push(albumName);
+            //console.log(albumName);
+          })
+        } catch(e){
+          gridvue.alertMessage = "There was an error listing your albums: " + e.message
+          gridvue.alertType = "error"
+          gridvue.displayAlert = true
+          return 
+
+        }
       },
       viewAlbum: function(albumName, direction) {
         this.displayingPhotos=true;
