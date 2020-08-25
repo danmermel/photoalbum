@@ -46,7 +46,7 @@
         <v-container v-if="getAlbumName">
           <v-layout row justify-center>
             <v-flex xs10>
-              <v-text-field v-model="newAlbum">Enter Name of new Album</v-text-field>
+              <v-text-field v-model="newAlbum" label = "Enter Name of new Album"></v-text-field>
               <v-btn  @click="getAlbumName=false">Cancel</v-btn>
               <v-btn  @click="createAlbum(newAlbum)">Submit</v-btn>
             </v-flex>

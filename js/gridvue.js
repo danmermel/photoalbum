@@ -499,12 +499,14 @@ var gridvue = new Vue({
           KeyConditionExpression: "keyword = :k", 
           ProjectionExpression: "image_id, confidence",
           IndexName: "keyword-index",
-          TableName: "images"
+          TableName: "images",
+          Limit: 20
          };
         dynamodb.query(params, function(err, data) {
           //console.log(data);
           if (err) console.log(err, err.stack); // an error occurred
           else {  //add images to the gridvue array
+            //sort items in reverse confidence order using this sort function
             data.Items = data.Items.sort(function(item1, item2){
               var v1= parseFloat(item1.confidence.N);
               var v2= parseFloat(item2.confidence.N);
