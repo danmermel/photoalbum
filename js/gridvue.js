@@ -535,9 +535,7 @@ var gridvue = new Vue({
       },
 
       downloadPhoto: function (imageURL) {
-
         window.open(imageURL)
-        
       }
     
 

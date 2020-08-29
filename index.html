@@ -30,7 +30,16 @@
           </v-btn>
         </v-app-bar>
         <v-navigation-drawer v-model="drawer" app >
-          <p>test</p>
+          <v-list nav dense >
+            <v-list-item-group active-class="deep-purple--text text--accent-4">
+              <v-list-item @click="listAlbums">
+                <v-list-item-icon>
+                  <v-icon>mdi-home</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Home</v-list-item-title>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
         </v-navigation-drawer>
         <div class="waiting" v-if="uploading">
           Uploading. {{ upCounter }} files remaining. Please wait...
@@ -66,12 +75,12 @@
         </v-container>
         <v-container v-if="signedIn && displayingAlbums">
           <v-layout row wrap>
-            <v-flex xs6 md3>
+            <v-flex xs6 md3 mb-1 px-1>
               <v-card height="100px" @click="getAlbumName=true">
                 <v-card-title class="justify-center">Add New Album</v-card-title>
               </v-card>
             </v-flex>
-            <v-flex xs6 md3 v-for="item in albumNames">
+            <v-flex xs6 md3 mb-1 px-1 v-for="item in albumNames">
               <v-card height="100px" @click="viewAlbum(item,'stt')">
                 <v-card-title class="justify-center">{{ item }}</v-card-title>
               </v-card>
@@ -80,12 +89,15 @@
         </v-container>
         <v-container v-if="signedIn && displayingPhotos">
           <v-layout row wrap>
-            <v-flex xs12>
+            <v-flex xs12 ma-1>
+              <v-subheader>
+                Viewing: {{ currentAlbum }}
+              </v-subheader>
               <v-btn @click="listAlbums()">
                 <v-icon left>mdi-arrow-left</v-icon>Back to Albums
               </v-btn>
               <v-btn @click="uploadPhotos=true">
-                <v-icon left>mdi-upload</v-icon>Upload Photos
+                <v-icon left>mdi-upload</v-icon>Upload
               </v-btn>
               <v-dialog v-model="del_dialog" width="200">
                 <template v-slot:activator="{ on }">
@@ -110,6 +122,7 @@
                 <v-file-input multiple @change="onFileChange"> </v-file-input>
               </v-card>
             </v-flex> -->
+            <v-spacer></v-spacer>
             <v-flex xs6 md3 v-for="item in photoUrls">
               <photo-item  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
             </v-flex>
