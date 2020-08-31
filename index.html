@@ -124,12 +124,6 @@
                 </v-card>
               </v-dialog>
             </v-flex>
-            <!-- <v-flex xs6 md3>
-              <v-card>
-                <v-card-title class="justify-center">Add Photos</v-card-title>
-                <v-file-input multiple @change="onFileChange"> </v-file-input>
-              </v-card>
-            </v-flex> -->
             <v-spacer></v-spacer>
             <v-flex xs6 md3 v-for="item in photoUrls">
               <photo-item  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
@@ -173,16 +167,12 @@
                   <v-chip v-for="tag in tags" @click="search(tag)">{{ tag }}</v-chip>
                 </v-card-text>
               </v-card>
-               <!-- <photo-item  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item> -->
             </v-flex>
           </v-layout>
         </v-container>
       </v-main>
     </v-app>
   </div>
-
-
-
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>

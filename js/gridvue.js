@@ -36,29 +36,6 @@ if (window.location.hash.length>1) {  //there is something in the URL so inspect
 var s3=null;  //create a global variable, but don't set it until you have all the credentials to access S3
 var dynamodb=null;
 
-Vue.component('confirm-button', {
-  props: ['label', 'pkey', 'action'],
-  methods: {
-    onclick: function () {
-      console.log(this.pkey, this.action);
-      if (confirm("Are you sure?")) {
-        
-        if (this.action == 'photo'){
-          console.log("deleting photo ", this.pkey)
-          gridvue.deletePhoto(this.pkey);
-        }
-        if (this.action == 'album'){
-          console.log("deleting album ", this.pkey)
-          gridvue.deleteAlbum(this.pkey);
-        }
-      }
-    }
-  },
-  template: `
-  <button type="button" class="btn btn-primary" @click="onclick()">{{ label }}</button>
-  `
-})
-
 Vue.component('photo-item', {
   props: ['url', 'pkey', 'action', 'thumburl'],
   methods: {
@@ -91,7 +68,6 @@ Vue.component('photo-item', {
           }
         }    
       })
-      // $('#pic_modal').modal({"show":true})
     }
   },
   template: `
@@ -100,12 +76,6 @@ Vue.component('photo-item', {
     </v-card>
   `
 })
-
-{/* <div class="grid-item">
-<img :src="thumburl">
-<confirm-button label="Delete" class="btn btn-danger" :action="action" :pkey="pkey"></confirm-button>
-<button type="button" class="btn btn-primary" @click="onZoom()">View</button>
-</div> */}
 
 var gridvue = new Vue({
     el: '#gridvue',
@@ -156,12 +126,6 @@ var gridvue = new Vue({
         });
 
         dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
-
-        // $('#pic_modal').on('hidden.bs.modal', function(){
-        //   console.log("hiding modal");
-        //   gridvue.modalUrl="";
-        // });
-
         this.listAlbums()
 
       }
@@ -486,7 +450,6 @@ var gridvue = new Vue({
       },
 
       search: function(keyword){
-        // $('#pic_modal').modal('hide')
         gridvue.searching=true;
         gridvue.displayingPhotos=true;
         gridvue.displayingAlbums=false;
@@ -538,9 +501,6 @@ var gridvue = new Vue({
       downloadPhoto: function (imageURL) {
         window.open(imageURL)
       }
-    
-
-
     }
 })
 
