@@ -15,7 +15,7 @@
 
 </head>
 <body>
-  <div id="gridvue">
+  <div id="gridvue" v-cloak>
     <v-app>
       <v-main>
         <v-app-bar app dark class="indigo">
@@ -41,10 +41,18 @@
             </v-list-item-group>
           </v-list>
         </v-navigation-drawer>
-        <div class="waiting" v-if="uploading">
-          Uploading. {{ upCounter }} files remaining. Please wait...
-          <img src="assets/ellipsis.gif">
-        </div>
+
+        <v-container v-if="uploading">
+          <v-layout row justify-center>
+            <v-flex xs10>
+              <v-card>
+                <v-card-text class="justify-center">Uploading. {{ upCounter }} files remaining. Please wait...</v-card-text>
+                <img src="assets/ellipsis.gif">
+              </v-card>
+            </v-flex>
+          </v-layout>
+        </v-container>
+        
         <v-container v-if="displayAlert">
           <v-layout row justify-center>
             <v-flex xs10>
@@ -76,12 +84,12 @@
         <v-container v-if="signedIn && displayingAlbums">
           <v-layout row wrap>
             <v-flex xs6 md3 mb-1 px-1>
-              <v-card height="100px" @click="getAlbumName=true">
+              <v-card color="blue darken-1" height="100px" @click="getAlbumName=true">
                 <v-card-title class="justify-center">Add New Album</v-card-title>
               </v-card>
             </v-flex>
             <v-flex xs6 md3 mb-1 px-1 v-for="item in albumNames">
-              <v-card height="100px" @click="viewAlbum(item,'stt')">
+              <v-card color="blue lighten-4"  height="100px" @click="viewAlbum(item,'stt')">
                 <v-card-title class="justify-center">{{ item }}</v-card-title>
               </v-card>
             </v-flex>

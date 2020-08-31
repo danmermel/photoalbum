@@ -330,6 +330,7 @@ var gridvue = new Vue({
         //console.log("Listing objects")
         try {
           var data = await s3.listObjects({Prefix: albumKey, Bucket: albumBucketName}).promise()
+          //console.log("Data is ", data)
           objects = data.Contents.map(function(object) {
             return {Key: object.Key};
             //console.log("objects is ", objects);

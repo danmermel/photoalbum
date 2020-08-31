@@ -40,3 +40,6 @@
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+[v-cloak] > * { display:none } 
+[v-cloak]::before { content: "Loading..." }
