@@ -126,7 +126,9 @@
             </v-flex>
             <v-spacer></v-spacer>
             <v-flex xs6 md3 v-for="item in photoUrls">
-              <photo-item  :key="item.key" action="photo" :url="item.url" :pkey="item.key" :thumburl="item.thumburl"></photo-item>
+              <v-card @click="onZoom(item.key, item.url)">
+                <v-img :src="item.thumburl"></v-img>
+              </v-card>
             </v-flex>
             <v-flex xs12 v-if="!endReached">
               <v-btn justify-center @click="viewAlbum(currentAlbum,'fwd')">Load More Images

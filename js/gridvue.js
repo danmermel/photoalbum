@@ -36,47 +36,6 @@ if (window.location.hash.length>1) {  //there is something in the URL so inspect
 var s3=null;  //create a global variable, but don't set it until you have all the credentials to access S3
 var dynamodb=null;
 
-Vue.component('photo-item', {
-  props: ['url', 'pkey', 'action', 'thumburl'],
-  methods: {
-    onZoom: function() {
-      gridvue.displayingSingle=true;
-      gridvue.displayingPhotos=false;
-      gridvue.displayingAlbums=false;
-      console.log(this.pkey);
-      gridvue.currentKey = this.pkey;
-      console.log(this.url)
-      gridvue.currentUrl = this.url;
-      gridvue.modalUrl=this.url;
-      gridvue.tags=[];
-      var params = {
-        ExpressionAttributeValues: {
-         ":k": {
-           S: this.pkey
-          }
-        }, 
-        KeyConditionExpression: "image_id = :k", 
-        ProjectionExpression: "keyword",
-        IndexName: "image_id-index",
-        TableName: "images"
-       };
-      dynamodb.query(params, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else {  //add keywords to tags
-          for (var i in data.Items) {
-            gridvue.tags.push(data.Items[i].keyword.S);
-          }
-        }    
-      })
-    }
-  },
-  template: `
-    <v-card @click="onZoom()">
-      <v-img :src="thumburl"></v-img>
-    </v-card>
-  `
-})
-
 var gridvue = new Vue({
     el: '#gridvue',
     vuetify: new Vuetify(),
@@ -93,7 +52,6 @@ var gridvue = new Vue({
       signedIn: false,
       uploading: false,
       upCounter: 0,
-      modalUrl: "",
       currentUrl: "",
       currentKey: "",
       searching: false,
@@ -496,6 +454,36 @@ var gridvue = new Vue({
           }    
         })
 
+      },
+      onZoom: function(pkey, purl) {
+        gridvue.displayingSingle=true;
+        gridvue.displayingPhotos=false;
+        gridvue.displayingAlbums=false;
+        //console.log(pkey);
+        gridvue.currentKey = pkey;
+        //console.log(purl)
+        gridvue.currentUrl = purl;
+        gridvue.modalUrl=purl;
+        gridvue.tags=[];
+        var params = {
+          ExpressionAttributeValues: {
+           ":k": {
+             S: pkey
+            }
+          }, 
+          KeyConditionExpression: "image_id = :k", 
+          ProjectionExpression: "keyword",
+          IndexName: "image_id-index",
+          TableName: "images"
+         };
+        dynamodb.query(params, function(err, data) {
+          if (err) console.log(err, err.stack); // an error occurred
+          else {  //add keywords to tags
+            for (var i in data.Items) {
+              gridvue.tags.push(data.Items[i].keyword.S);
+            }
+          }    
+        })
       },
 
       downloadPhoto: function (imageURL) {
