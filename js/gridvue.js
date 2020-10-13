@@ -56,6 +56,8 @@ var gridvue = new Vue({
       currentKey: "",
       searching: false,
       tags: [],
+      currentSearchTag:"",
+      endSearchReached: false,
       drawer: false,
       del_dialog: false,
       getAlbumName: false,
@@ -409,6 +411,7 @@ var gridvue = new Vue({
 
       search: function(keyword){
         gridvue.searching=true;
+        gridvue.currentSearchTag=keyword;
         gridvue.displayingPhotos=true;
         gridvue.displayingAlbums=false;
         gridvue.displayingSingle=false;
