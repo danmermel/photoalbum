@@ -159,66 +159,73 @@ resource "aws_lambda_function" "photoalbum_reko" {
   timeout = 10
 }
 
-/*
+resource "aws_lambda_function" "photoalbum_remover" {
+  filename      = "../lambda/remover/remover.zip"
+  function_name = "photoalbum_remover"
+  role          = aws_iam_role.reko_role.arn
+  handler       = "index.handler"
+  runtime = "nodejs12.x"
+  timeout = 10
+}
 
+resource "aws_lambda_function" "photoalbum_resizer" {
+  filename      = "../lambda/resize/resize.zip"
+  function_name = "photoalbum_resizer"
+  role          = aws_iam_role.reko_role.arn
+  handler       = "index.handler"
+  runtime = "nodejs12.x"
+  timeout = 10
+  environment {
+    variables = {
+      THUMB_BUCKET = aws_s3_bucket.photoalbum-thumbs.id
+      BUCKET = aws_s3_bucket.photoalbum-images.id
+    }
+  }
+}
 
+// give s3 permission to execute lambda
 
-echo "create lambda functions"
-aws lambda create-function --function-name "reko" \
-        --runtime nodejs8.10 \
-        --role arn:aws:iam::160991186365:role/reko \
-        --handler index.handler --zip-file fileb://dummy.zip
+resource "aws_lambda_permission" "allow_s3_reko" {
+  statement_id  = "AllowS3ToExecuteReko"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.photoalbum_reko.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.photoalbum-images.arn
+}
 
-aws lambda update-function-configuration --function-name "reko" \
-        --timeout 10
+resource "aws_lambda_permission" "allow_s3_remover" {
+  statement_id  = "AllowS3ToExecuteRemover"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.photoalbum_remover.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.photoalbum-images.arn
+}
 
-echo "create lambda functions"
-aws lambda create-function --function-name "remover" \
-        --runtime nodejs8.10 \
-        --role arn:aws:iam::160991186365:role/reko \
-        --handler index.handler --zip-file fileb://dummy.zip
+resource "aws_lambda_permission" "allow_s3_resizer" {
+  statement_id  = "AllowS3ToExecuteResizer"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.photoalbum_resizer.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.photoalbum-images.arn
+}
 
-echo "create lambda functions"
-aws lambda create-function --function-name "resizer" \
-        --runtime nodejs8.10 \
-        --role arn:aws:iam::160991186365:role/reko \
-        --handler index.handler --zip-file fileb://dummy.zip
+//trigger resizer from s3
+resource "aws_s3_bucket_notification" "photoalbum-triggers" {
+    bucket = aws_s3_bucket.photoalbum-images.id
 
+    lambda_function {
+        lambda_function_arn = aws_lambda_function.photoalbum_resizer.arn
+        events        = ["s3:ObjectCreated:*"] 
+    }
 
-aws lambda update-function-configuration --function-name "resizer" \
-        --environment "Variables={BUCKET=leilaphotos,THUMB_BUCKET=leilaphotosthumb}" \
-        --timeout 10
+    lambda_function {
+      lambda_function_arn = aws_lambda_function.photoalbum_remover.arn
+      events        = ["s3:ObjectRemoved:*"]
+    }
 
-# create s3 permission to access lambda
-echo "create S3->Lambda permission for leilaphotos"
-aws lambda add-permission \
-    --function-name reko \
-    --statement-id rekos3 \
-    --action "lambda:*" \
-    --principal s3.amazonaws.com \
-    --source-arn "arn:aws:s3:::leilaphotos"
-
-
-echo "create S3->Lambda permission for leilaphotos"
-aws lambda add-permission \
-    --function-name resizer \
-    --statement-id resizers3 \
-    --action "lambda:*" \
-    --principal s3.amazonaws.com \
-    --source-arn "arn:aws:s3:::leilaphotos"
-
-echo "create S3->Lambda permission for leilaphotos"
-aws lambda add-permission \
-    --function-name remover \
-    --statement-id removers3 \
-    --action "lambda:*" \
-    --principal s3.amazonaws.com \
-    --source-arn "arn:aws:s3:::leilaphotos"
-
-
-echo "create leilaphotos reko trigger from S3"
-LAMBDACONFIG='{"LambdaFunctionConfigurations":[{"Id":"leilaphotos_resize_trigger","LambdaFunctionArn":"arn:aws:lambda:eu-west-1:160991186365:function:resizer","Events":["s3:ObjectCreated:*"]}, {"Id":"leilaphotos_remover_trigger","LambdaFunctionArn":"arn:aws:lambda:eu-west-1:160991186365:function:remover","Events":["s3:ObjectRemoved:*"]}]}'
-aws s3api put-bucket-notification-configuration --bucket "leilaphotos" --notification-configuration "$LAMBDACONFIG"daniel@daniel-X550CL:~/projects/leilaphotos/terraform$ 
-
-*/
+    depends_on = [
+      aws_lambda_permission.allow_s3_remover,
+      aws_lambda_permission.allow_s3_resizer
+    ]
+}
 
