@@ -4,6 +4,9 @@ const db = require('./db.js');
 const rekognition = new AWS.Rekognition({"region":"eu-west-1"});
 const dynamodb = new AWS.DynamoDB({"region":"eu-west-1"});
 
+const BUCKET = process.env.BUCKET
+const TABLE = process.env.TABLE
+
 function addToDynamoDB(image_id, data) {
 
   var kuuid = require('kuuid')
@@ -31,14 +34,13 @@ function addToDynamoDB(image_id, data) {
   
   //this is the object  you have to build to insert into dynamodb
   var params = {
-    RequestItems: {
-      images: []    //images is the name of the dynamodb table
-    }
+    RequestItems: {}
   }
   
+  params.requestItems[TABLE] = []
+
   //this array contains the words we have already inserted, so that we don't insert it again
   var dedupelist = []
-  
   for (i in wordList) {
     if (dedupelist.indexOf(wordList[i].name) === -1) {   //i.e.the word is not yet in the array
       var album = image_id.match(/(^.*)\//)[1];  //gets the album name
@@ -53,8 +55,8 @@ function addToDynamoDB(image_id, data) {
           }
         }
       }
-      params.RequestItems.images.push(obj)
-      if (params.RequestItems.images.length ==25 ) {
+      params.RequestItems[TABLE].push(obj)
+      if (params.RequestItems[TABLE].length ==25 ) {
         break  // limit of things you can write to the db has been reached. Stop adding...
       }
       dedupelist.push(wordList[i].name)
@@ -84,7 +86,7 @@ exports.handler = function(event, context, callback) {
       var rekoParams = {
         Image: {
          S3Object: {
-          Bucket: "leilaphotos", 
+          Bucket: BUCKET, 
           Name: key
          }
         }, 

@@ -149,14 +149,26 @@ resource "aws_iam_role_policy_attachment" "reko_policy" {
 }
 
 // create the lambda functions
+// the source_code_hash bit makes a hash of the file you want to upload. If the hash is different from the
+// last time you uploaded (i.e. you changed the lambda code), then it uploads it again. But if not, it ignores it. Neat!
+// Not so good if you have more complicated scenarios because here you have the code and the infra in one place... if you want 
+//more separation you need a more complicated setup, e.g. https://johnroach.io/2020/09/04/deploying-lambda-functions-with-terraform-just-dont/ 
 
 resource "aws_lambda_function" "photoalbum_reko" {
   filename      = "../lambda/rekognition/reko.zip"
   function_name = "photoalbum_reko"
   role          = aws_iam_role.reko_role.arn
   handler       = "index.handler"
-  runtime = "nodejs12.x"
-  timeout = 10
+  runtime       = "nodejs12.x"
+  timeout       = 10
+  source_code_hash = filebase64sha256("../lambda/rekognition/reko.zip")
+
+  environment {
+    variables = {
+      BUCKET = aws_s3_bucket.photoalbum-images.id
+      TABLE = aws_dynamodb_table.photoalbum-images-db.id
+    }
+  }
 }
 
 resource "aws_lambda_function" "photoalbum_remover" {
@@ -166,6 +178,7 @@ resource "aws_lambda_function" "photoalbum_remover" {
   handler       = "index.handler"
   runtime = "nodejs12.x"
   timeout = 10
+  source_code_hash = filebase64sha256("../lambda/remover/remover.zip")
 }
 
 resource "aws_lambda_function" "photoalbum_resizer" {
@@ -175,6 +188,8 @@ resource "aws_lambda_function" "photoalbum_resizer" {
   handler       = "index.handler"
   runtime = "nodejs12.x"
   timeout = 10
+  source_code_hash = filebase64sha256("../lambda/resize/resize.zip")
+
   environment {
     variables = {
       THUMB_BUCKET = aws_s3_bucket.photoalbum-thumbs.id
