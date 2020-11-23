@@ -6,8 +6,8 @@ var IdentityPoolId = 'eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8';
 // var CognitoAuth = AmazonCognitoIdentity.CognitoAuth;
 	
 var authData = {
-  ClientId : 'emvliumkmno2khq73lhcuebsk', // Your client id here
-  AppWebDomain : 'leilaphotos.auth.eu-west-1.amazoncognito.com',
+  ClientId : '18ums2tnksu8h8a2dsjna2og3a', // Your client id here
+  AppWebDomain : 'photoalbum.auth.eu-west-1.amazoncognito.com',
   TokenScopesArray : ['email', 'openid'], 
   RedirectUriSignIn : RedirectUriSignIn,
 	RedirectUriSignOut : RedirectUriSignOut
@@ -75,7 +75,7 @@ var gridvue = new Vue({
         AWS.config.credentials = new AWS.CognitoIdentityCredentials({
           IdentityPoolId: IdentityPoolId,
           Logins: {
-            'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_Y9jF6Qx5c': auth.signInUserSession.getIdToken().getJwtToken()
+            'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_MpiobbLjk': auth.signInUserSession.getIdToken().getJwtToken()
           }
         });
         AWS.config.credentials.get();

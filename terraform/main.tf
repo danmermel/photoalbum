@@ -303,6 +303,7 @@ resource "aws_cognito_user_pool_client" "app-photoalbum" {
   logout_urls = [ "http://localhost:8001", "https://mermelstein.co.uk" ]
   allowed_oauth_flows = [ "implicit" ]
   allowed_oauth_scopes = [ "email","openid" ]
+  allowed_oauth_flows_user_pool_client = true
   supported_identity_providers = [ "COGNITO" ]
 
 }
