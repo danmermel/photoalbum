@@ -244,3 +244,70 @@ resource "aws_s3_bucket_notification" "photoalbum-triggers" {
     ]
 }
 
+resource "aws_cognito_user_pool" "photoalbum_cognito_pool" {
+  name   = "photoalbum_cognito_pool"
+  username_attributes = [ "email" ]
+  password_policy  { 
+    minimum_length                   = 8
+    require_lowercase                = true
+    require_numbers                  = true
+    require_uppercase                = true
+    temporary_password_validity_days = 7
+    require_symbols                  = false
+  }
+  admin_create_user_config  {
+    allow_admin_create_user_only = true
+  }
+ 
+}
+
+resource "aws_iam_role" "photoalbum_group_role" {
+  name = "photoalbum-group-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "cognito-identity.amazonaws.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "cognito-identity.amazonaws.com:aud": "eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8"
+        },
+        "ForAnyValue:StringLike": {
+          "cognito-identity.amazonaws.com:amr": "authenticated"
+        }
+      }
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_cognito_user_group" "allusers" {
+  name         = "allusers"
+  user_pool_id = aws_cognito_user_pool.photoalbum_cognito_pool.id
+  description  = "Managed by Terraform"
+  role_arn     = aws_iam_role.photoalbum_group_role.arn
+}
+
+resource "aws_cognito_user_pool_client" "app-photoalbum" {
+  name = "app-photoalbum"
+  user_pool_id = aws_cognito_user_pool.photoalbum_cognito_pool.id
+  callback_urls = [ "http://localhost:8001", "https://mermelstein.co.uk" ]
+  logout_urls = [ "http://localhost:8001", "https://mermelstein.co.uk" ]
+  allowed_oauth_flows = [ "implicit" ]
+  allowed_oauth_scopes = [ "email","openid" ]
+  supported_identity_providers = [ "COGNITO" ]
+
+}
+
+resource "aws_cognito_user_pool_domain" "photoalbum-domain" {
+  domain       = "photoalbum"
+  user_pool_id = aws_cognito_user_pool.photoalbum_cognito_pool.id
+}
