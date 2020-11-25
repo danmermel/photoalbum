@@ -39,7 +39,6 @@ resource "aws_dynamodb_table" "photoalbum-images-db" {
    name = "id"
    type = "S"
   }
-/*
   attribute {
    name = "image_id"
    type = "S"
@@ -59,7 +58,6 @@ resource "aws_dynamodb_table" "photoalbum-images-db" {
     hash_key = "keyword"
     projection_type = "ALL"
   }
-*/
 }
 
 //bucket for the photos
@@ -199,6 +197,7 @@ resource "aws_lambda_function" "photoalbum_resizer" {
     variables = {
       THUMB_BUCKET = aws_s3_bucket.photoalbum-thumbs.id
       BUCKET = aws_s3_bucket.photoalbum-images.id
+      REKO_LAMBDA = aws_lambda_function.photoalbum_reko.id
     }
   }
 }

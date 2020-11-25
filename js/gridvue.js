@@ -477,7 +477,7 @@ var gridvue = new Vue({
           KeyConditionExpression: "image_id = :k", 
           ProjectionExpression: "keyword",
           IndexName: "image_id-index",
-          TableName: "images"
+          TableName: "photoalbumImages"
          };
         dynamodb.query(params, function(err, data) {
           if (err) console.log(err, err.stack); // an error occurred

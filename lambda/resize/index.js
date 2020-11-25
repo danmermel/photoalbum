@@ -11,6 +11,7 @@ const fs = require('fs');
 
 const BUCKET = process.env.BUCKET;
 const THUMB_BUCKET = process.env.THUMB_BUCKET;
+const REKO_LAMBDA = process.env.REKO_LAMBDA;
 
 exports.handler = function(event, context, callback) {
   
@@ -38,7 +39,7 @@ exports.handler = function(event, context, callback) {
         }).then(function() {
           console.log("written to s3!");
           //now sending it to reko for keyword recognition
-          lambda.invoke ({"FunctionName":"reko", 
+          lambda.invoke ({"FunctionName": REKO_LAMBDA, 
                           "Payload":JSON.stringify({"key":key})},
                           callback
                         );

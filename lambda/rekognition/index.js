@@ -37,7 +37,7 @@ function addToDynamoDB(image_id, data) {
     RequestItems: {}
   }
   
-  params.requestItems[TABLE] = []
+  params.RequestItems[TABLE] = []
 
   //this array contains the words we have already inserted, so that we don't insert it again
   var dedupelist = []
