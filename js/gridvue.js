@@ -1,7 +1,7 @@
-var albumBucketName = 'leilaphotos';
-var albumBucketNameThumb = 'leilaphotosthumb';
+var albumBucketName = 'photoalbum-images';
+var albumBucketNameThumb = 'photoalbum-thumbs';
 var bucketRegion = 'eu-west-1';
-var IdentityPoolId = 'eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8';
+var IdentityPoolId = 'eu-west-1:c57346aa-b66d-49be-8bc0-c72483115c97';
 
 // var CognitoAuth = AmazonCognitoIdentity.CognitoAuth;
 	

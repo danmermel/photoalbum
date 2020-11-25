@@ -13,6 +13,11 @@ data "aws_iam_policy" "AmazonS3FullAccess" {
   arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
+data "aws_iam_policy" "AmazonDynamoDBReadOnlyAccess" {
+  arn = "arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess"
+}
+
+
 provider "aws" {
   region = "eu-west-1"
 }
@@ -277,7 +282,7 @@ resource "aws_iam_role" "photoalbum_group_role" {
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "cognito-identity.amazonaws.com:aud": "eu-west-1:2f189814-9f5a-4658-b248-560faa9747e8"
+          "cognito-identity.amazonaws.com:aud": "${aws_cognito_identity_pool.photoalbum_id_pool.id}"
         },
         "ForAnyValue:StringLike": {
           "cognito-identity.amazonaws.com:amr": "authenticated"
@@ -311,4 +316,94 @@ resource "aws_cognito_user_pool_client" "app-photoalbum" {
 resource "aws_cognito_user_pool_domain" "photoalbum-domain" {
   domain       = "photoalbum"
   user_pool_id = aws_cognito_user_pool.photoalbum_cognito_pool.id
+}
+
+//Create a federated identity pool
+resource "aws_cognito_identity_pool" "photoalbum_id_pool" {
+  identity_pool_name               = "photoalbum_pool"
+  allow_unauthenticated_identities = false
+
+  cognito_identity_providers {
+  client_id               = aws_cognito_user_pool_client.app-photoalbum.id
+  provider_name           = "cognito-idp.${data.aws_region.current.name}.amazonaws.com/${aws_cognito_user_pool.photoalbum_cognito_pool.id}"
+  server_side_token_check = false
+  }
+}
+
+//create a role that will be given to the identity pool. This requires a policy 
+resource "aws_iam_role" "photoalbum_cognito_authenticated" {
+  name = "photoalbum_cognito_authenticated"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "cognito-identity.amazonaws.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "cognito-identity.amazonaws.com:aud": "${aws_cognito_identity_pool.photoalbum_id_pool.id}"
+        },
+        "ForAnyValue:StringLike": {
+          "cognito-identity.amazonaws.com:amr": "authenticated"
+        }
+      }
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "cognito_authenticated_policy" {
+  name = "cognito_authenticated_policy"
+  role = aws_iam_role.photoalbum_cognito_authenticated.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "mobileanalytics:PutEvents",
+        "cognito-sync:*",
+        "cognito-identity:*"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+          "s3:*"
+      ],
+      "Resource": [
+          "${aws_s3_bucket.photoalbum-images.arn}/*",
+          "${aws_s3_bucket.photoalbum-images.arn}",
+          "${aws_s3_bucket.photoalbum-thumbs.arn}/*",
+          "${aws_s3_bucket.photoalbum-thumbs.arn}"
+      ]
+  }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "dynamodb_RO_policy" {
+  role       = aws_iam_role.photoalbum_cognito_authenticated.name
+  policy_arn = data.aws_iam_policy.AmazonDynamoDBReadOnlyAccess.arn
+}
+
+//attach the role to the identity pool
+resource "aws_cognito_identity_pool_roles_attachment" "photoalbum_id_pool_role_attachment" {
+  identity_pool_id = aws_cognito_identity_pool.photoalbum_id_pool.id
+
+  roles = {
+    "authenticated" = aws_iam_role.photoalbum_cognito_authenticated.arn
+  }
 }
