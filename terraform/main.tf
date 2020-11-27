@@ -182,6 +182,12 @@ resource "aws_lambda_function" "photoalbum_remover" {
   runtime = "nodejs12.x"
   timeout = 10
   source_code_hash = filebase64sha256("../lambda/remover/remover.zip")
+
+  environment {
+    variables = {
+      TABLE = aws_dynamodb_table.photoalbum-images-db.id
+    }
+  }
 }
 
 resource "aws_lambda_function" "photoalbum_resizer" {
