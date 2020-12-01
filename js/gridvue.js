@@ -1,16 +1,21 @@
-var albumBucketName = 'photoalbum-images';
-var albumBucketNameThumb = 'photoalbum-thumbs';
-var bucketRegion = 'eu-west-1';
-var IdentityPoolId = 'eu-west-1:c57346aa-b66d-49be-8bc0-c72483115c97';
+//console.log("config is ", config)
 
-// var CognitoAuth = AmazonCognitoIdentity.CognitoAuth;
-	
+var ClientId = config.cognitoAppId.value
+var AppWebDomain = config.cognitoAppDomain.value+".auth."+config.awsRegion.value +".amazoncognito.com";
+
+
+var albumBucketName = config.photoBucket.value;
+var albumBucketNameThumb = config.thumbBucket.value;
+var bucketRegion = config.awsRegion.value;
+var IdentityPoolId = config.cognitoIdentityPool.value;
+var table = config.dynamoDB.value
+
 var authData = {
-  ClientId : '18ums2tnksu8h8a2dsjna2og3a', // Your client id here
-  AppWebDomain : 'photoalbum.auth.eu-west-1.amazoncognito.com',
+  ClientId : ClientId, // Your client id here
+  AppWebDomain : AppWebDomain,
   TokenScopesArray : ['email', 'openid'], 
-  RedirectUriSignIn : RedirectUriSignIn,
-	RedirectUriSignOut : RedirectUriSignOut
+  RedirectUriSignIn : config.cognitoCallbackUrls.value[0],
+	RedirectUriSignOut : config.cognitoLogoutUrls.value[0]
 };
 
 var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
@@ -424,7 +429,7 @@ var gridvue = new Vue({
           KeyConditionExpression: "keyword = :k", 
           ProjectionExpression: "image_id, confidence",
           IndexName: "keyword-index",
-          TableName: "photoalbumImages",
+          TableName: table,
           Limit: 20
          };
         dynamodb.query(params, function(err, data) {
@@ -477,7 +482,7 @@ var gridvue = new Vue({
           KeyConditionExpression: "image_id = :k", 
           ProjectionExpression: "keyword",
           IndexName: "image_id-index",
-          TableName: "photoalbumImages"
+          TableName: table
          };
         dynamodb.query(params, function(err, data) {
           if (err) console.log(err, err.stack); // an error occurred

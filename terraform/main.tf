@@ -30,6 +30,11 @@ terraform {
   }
 }
 
+output "awsRegion"  {
+  value = data.aws_region.current.name
+}
+
+
 // DynamoDB images table
 resource "aws_dynamodb_table" "photoalbum-images-db" {
   name = "photoalbumImages"
@@ -60,6 +65,10 @@ resource "aws_dynamodb_table" "photoalbum-images-db" {
   }
 }
 
+output "dynamoDB"  {
+  value = aws_dynamodb_table.photoalbum-images-db.name
+}
+
 //bucket for the photos
 resource "aws_s3_bucket" "photoalbum-images" {
   bucket = "photoalbum-images"
@@ -71,6 +80,9 @@ resource "aws_s3_bucket" "photoalbum-images" {
   }
 
 }
+output "photoBucket"  {
+  value = aws_s3_bucket.photoalbum-images.id
+}
 
 //bucket for the thumbnails
 resource "aws_s3_bucket" "photoalbum-thumbs" {
@@ -81,7 +93,10 @@ resource "aws_s3_bucket" "photoalbum-thumbs" {
     allowed_origins = ["*"]
     expose_headers  = ["ETag"]
   }
+}
 
+output "thumbBucket"  {
+  value = aws_s3_bucket.photoalbum-thumbs.id
 }
 
 // the role that will be running the lambdas and accessing the buckets and db
@@ -174,6 +189,11 @@ resource "aws_lambda_function" "photoalbum_reko" {
   }
 }
 
+output "rekoLambda"  {
+  value = aws_lambda_function.photoalbum_reko.function_name
+}
+
+
 resource "aws_lambda_function" "photoalbum_remover" {
   filename      = "../lambda/remover/remover.zip"
   function_name = "photoalbum_remover"
@@ -188,6 +208,10 @@ resource "aws_lambda_function" "photoalbum_remover" {
       TABLE = aws_dynamodb_table.photoalbum-images-db.id
     }
   }
+}
+
+output "removerLambda"  {
+  value = aws_lambda_function.photoalbum_remover.function_name
 }
 
 resource "aws_lambda_function" "photoalbum_resizer" {
@@ -208,6 +232,9 @@ resource "aws_lambda_function" "photoalbum_resizer" {
   }
 }
 
+output "resizeLambda"  {
+  value = aws_lambda_function.photoalbum_resizer.function_name
+}
 // give s3 permission to execute lambda
 
 resource "aws_lambda_permission" "allow_s3_reko" {
@@ -271,6 +298,10 @@ resource "aws_cognito_user_pool" "photoalbum_cognito_pool" {
  
 }
 
+output "cognitoUserPool"  {
+  value = aws_cognito_user_pool.photoalbum_cognito_pool.id
+}
+
 resource "aws_iam_role" "photoalbum_group_role" {
   name = "photoalbum-group-role"
 
@@ -309,8 +340,8 @@ resource "aws_cognito_user_group" "allusers" {
 resource "aws_cognito_user_pool_client" "app-photoalbum" {
   name = "app-photoalbum"
   user_pool_id = aws_cognito_user_pool.photoalbum_cognito_pool.id
-  callback_urls = [ "http://localhost:8001", "https://mermelstein.co.uk" ]
-  logout_urls = [ "http://localhost:8001", "https://mermelstein.co.uk" ]
+  callback_urls = terraform.workspace == "stage" ? [ "https://mermelstein.co.uk"] : ["http://localhost:8001"]
+  logout_urls = terraform.workspace == "stage" ? [ "https://mermelstein.co.uk"] : ["http://localhost:8001"]
   allowed_oauth_flows = [ "implicit" ]
   allowed_oauth_scopes = [ "email","openid" ]
   allowed_oauth_flows_user_pool_client = true
@@ -318,9 +349,25 @@ resource "aws_cognito_user_pool_client" "app-photoalbum" {
 
 }
 
+output "cognitoAppId"  {
+  value = aws_cognito_user_pool_client.app-photoalbum.id
+}
+
+output "cognitoCallbackUrls" {
+  value = aws_cognito_user_pool_client.app-photoalbum.callback_urls
+}
+
+output "cognitoLogoutUrls" {
+  value = aws_cognito_user_pool_client.app-photoalbum.logout_urls
+}
+
 resource "aws_cognito_user_pool_domain" "photoalbum-domain" {
   domain       = "photoalbum"
   user_pool_id = aws_cognito_user_pool.photoalbum_cognito_pool.id
+}
+
+output "cognitoAppDomain"  {
+  value = aws_cognito_user_pool_domain.photoalbum-domain.domain
 }
 
 //Create a federated identity pool
@@ -333,6 +380,10 @@ resource "aws_cognito_identity_pool" "photoalbum_id_pool" {
   provider_name           = "cognito-idp.${data.aws_region.current.name}.amazonaws.com/${aws_cognito_user_pool.photoalbum_cognito_pool.id}"
   server_side_token_check = false
   }
+}
+
+output "cognitoIdentityPool"  {
+  value = aws_cognito_identity_pool.photoalbum_id_pool.id
 }
 
 //create a role that will be given to the identity pool. This requires a policy 
