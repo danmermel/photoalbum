@@ -77,12 +77,15 @@ var gridvue = new Vue({
       if (auth.isUserSignedIn(auth.getCurrentUser())){
         //console.log("User is signed in");
         this.signedIn= true;
-        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        var cognitoConfig = {
           IdentityPoolId: IdentityPoolId,
-          Logins: {
-            'cognito-idp.eu-west-1.amazonaws.com/eu-west-1_MpiobbLjk': auth.signInUserSession.getIdToken().getJwtToken()
-          }
-        });
+          Logins: {}
+        }
+        const LOGIN_PARAM = "cognito-idp.eu-west-1.amazonaws.com/" + config.cognitoUserPool.value
+        cognitoConfig.Logins[LOGIN_PARAM] = auth.signInUserSession.getIdToken().getJwtToken()
+
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials(cognitoConfig);
+
         AWS.config.credentials.get();
 
         s3 = new AWS.S3({
