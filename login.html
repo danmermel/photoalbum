@@ -1,49 +1,44 @@
 <html>
 <head>
 
-<script src="js/cognito.js"></script>
+	<script src="js/cognito.js"></script>
 
-<!-- AWS SDK -->
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
+	<!-- AWS SDK -->
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.238.1.min.js"></script>
 
 </head>
 
 <body>
-<script src="js/config.js"> </script>
+	<script src="js/config.js"> </script>
 
-<script>
+	<script>
+		var authData = {
+			ClientId : config.cognitoAppId.value, // Your client id here
+			AppWebDomain : config.cognitoAppDomain.value+".auth."+config.awsRegion.value +".amazoncognito.com",
+			TokenScopesArray : ['email', 'openid'], 
+			RedirectUriSignIn : config.cognitoCallbackUrls.value[0],
+			RedirectUriSignOut : config.cognitoLogoutUrls.value[0]
+		};
+		
+		var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
 
-var authData = {
-	ClientId : '18ums2tnksu8h8a2dsjna2og3a', // Your client id here
-	AppWebDomain : 'photoalbum.auth.eu-west-1.amazoncognito.com',
-	TokenScopesArray : ['email', 'openid'], // e.g.['phone', 'email', 'profile','openid', 'aws.cognito.signin.user.admin'],
-	RedirectUriSignIn : RedirectUriSignIn,
-	RedirectUriSignOut : RedirectUriSignOut
+		auth.userhandler = {
+			onSuccess: function(result) {
+				console.log(result);
+			},
+			onFailure: function(err) {
+				alert("Error signing in!");
+			}
+		};
 
-  };
-  
-var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
-
-auth.userhandler = {
-	onSuccess: function(result) {
-		console.log(result);
-	},
-	onFailure: function(err) {
-		alert("Error signing in!");
-	}
-};
-
-if (!auth.isUserSignedIn(auth.getCurrentUser())) {
-	console.log("user not signed in");
-	auth.getSession()
-} else{
-	console.log("user is signed in");
-	window.location = authData.RedirectUriSignIn;
-}
-
-
-
-</script>
+		if (!auth.isUserSignedIn(auth.getCurrentUser())) {
+			console.log("user not signed in");
+			auth.getSession()
+		} else{
+			console.log("user is signed in");
+			window.location = authData.RedirectUriSignIn;
+		}
+	</script>
 </body>
 
 

@@ -24,8 +24,8 @@ AWS.config.region = bucketRegion;
 
 auth.userhandler = {
   onSuccess: function (result) {
-    console.log("Signing in success");
-    console.log(result);
+    //console.log("Signing in success");
+    //console.log(result);
   },
   onFailure: function (err) {
     alert("Error!");
@@ -77,6 +77,8 @@ var gridvue = new Vue({
       if (auth.isUserSignedIn(auth.getCurrentUser())){
         //console.log("User is signed in");
         this.signedIn= true;
+
+        //you first have to build the credentials config object 
         var cognitoConfig = {
           IdentityPoolId: IdentityPoolId,
           Logins: {}
@@ -84,8 +86,8 @@ var gridvue = new Vue({
         const LOGIN_PARAM = "cognito-idp.eu-west-1.amazonaws.com/" + config.cognitoUserPool.value
         cognitoConfig.Logins[LOGIN_PARAM] = auth.signInUserSession.getIdToken().getJwtToken()
 
+        //then you create an instance of credentials
         AWS.config.credentials = new AWS.CognitoIdentityCredentials(cognitoConfig);
-
         AWS.config.credentials.get();
 
         s3 = new AWS.S3({
